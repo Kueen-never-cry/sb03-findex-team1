@@ -1,0 +1,42 @@
+name: Daily Backup - Tag develop
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # UTC 기준 00:00 = KST 09:00
+  workflow_dispatch:     # 수동 실행도 가능
+
+jobs:
+  tag-backup:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write  # 태그 생성을 위한 권한
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 전체 커밋 내역 필요 (태그 생성을 위해)
+
+      - name: Set current date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Create backup tag from develop branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin develop
+          git checkout origin/develop
+
+          TAG_NAME="backup-develop-${{ steps.date.outputs.date }}"
+
+          # 태그가 이미 존재하면 건너뜀
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists. Skipping."
+          else
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+            echo "Tag $TAG_NAME created and pushed."
+          fi
