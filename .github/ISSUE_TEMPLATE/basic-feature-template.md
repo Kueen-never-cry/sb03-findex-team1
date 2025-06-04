@@ -3,7 +3,7 @@ name: Basic Feature Template
 about: Suggest an idea for this project
 title: "[Feature]"
 labels: ''
-assignees: BackEunHo
+assignees: ''
 
 ---
 
