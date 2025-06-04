@@ -27,5 +27,49 @@
 
 
 ## **프로젝트 구조**
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/kueennevercry/findex/
+│   │
+│   │       ├── FindexApplication.java
+│   │       │   └─ 메인 애플리케이션 클래스 (@SpringBootApplication)
+│   │
+│   │       ├── controller/                  ← 웹 요청 (API)을 처리하는 계층
+│   │       │   └── Controller.java          ← 테스트용
+│   │
+│   │       ├── service/                     ← 비즈니스 로직을 담당하는 계층
+│   │       │   └── Service.java             ← 테스트용 
+│   │
+│   │       ├── repository/                  ← DB에 접근하는 계층 (JPA 등)
+│   │       │   └── Repository.java          ← 테스트용
+│   │
+│   │       ├── domain/                      ← Entity 클래스 (DB 테이블과 매핑)
+│   │       │   └── Entity.java              ← 테스트용 
+│   │
+│   │       ├── dto/                         ← 데이터 전달 객체
+│   │       │   └── Dto.java                 ← 테스트용
+│   │
+│   │       ├── config/                      ← 전역 설정 클래스 (CORS, Security 등)
+│   │       │   └── Config.java              ← 테스트용
+│   │
+│   │       └── mapper/                      ← Entity ↔ DTO 간 매핑을 수행
+│   │           └── Mapper.java              ← 테스트용 
+│
+│   └── resources/
+│       ├── application.yml                  ← 애플리케이션 설정 파일
+│       ├── db.yaml                          ← DB 설정 파일
+│       ├── static/                          ← 정적 리소스 (HTML, CSS, JS, 이미지 등)
+
+│
+├── test/
+│   └── java/
+│       └── com/kueennevercry/findex/
+│           └── FindexApplicationTests.java     ← 테스트 클래스
+│
+├── build.gradle                                ← 의존성 및 빌드 설정
+└── README.md
+```
 
 ## **배포 링크**
