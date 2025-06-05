@@ -2,7 +2,7 @@ name: Daily Backup - Tag develop
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # UTC 기준 00:00 = KST 09:00
+    - cron: '0 22 * * *'  # 한국시간 07:00 목표 (지연 고려)
   workflow_dispatch:     # 수동 실행도 가능
 
 jobs:
@@ -21,7 +21,17 @@ jobs:
       - name: Set current date
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
-
+        
+      - name: Log execution time # 지연 시간을 확인하기 위한 로그 출력 추가
+        run: |
+          echo "============== 실행 시간 모니터링 =============="
+          echo "UTC Time: $(date -u +'%Y-%m-%d %H:%M:%S')"
+          echo "KST Time: $(TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M:%S')"
+          echo "Expected KST: 07:00"
+          echo "Actual KST: $(TZ='Asia/Seoul' date +'%H:%M')"
+          echo "Delay: $(TZ='Asia/Seoul' date +'%H:%M') vs 07:00"
+          echo "============================================="
+          
       - name: Create backup tag from develop branch
         run: |
           git config user.name "github-actions[bot]"
