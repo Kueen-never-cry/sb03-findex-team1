@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class IndexChartServiceImpl implements IndexChartService {
+public class IndexDataServiceImpl implements IndexDataService {
 
   private final OpenApiClient openApiClient;
   private String STOCK_INDEX_ENDPOINT = "/getStockMarketIndex";

@@ -46,7 +46,7 @@ public class DefaultOpenApiClient implements OpenApiClient {
     String base = properties.getBaseUrl() + endpoint
         // endpoint: [getStockMarketIndex | getBoundMarketIndex | getDerivationProductMarketIndex]
         + "?serviceKey=" + serviceKey
-        + "&idxNm=" + indexCode
+//        + "&idxNm=" + indexCode
         + "&beginBasDt=" + from
         + "&endBasDt=" + to
         + "&resultType=json";

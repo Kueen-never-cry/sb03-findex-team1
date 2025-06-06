@@ -5,7 +5,7 @@ import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public interface IndexChartService {
+public interface IndexDataService {
 
   IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException;
