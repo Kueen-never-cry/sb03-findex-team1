@@ -35,8 +35,9 @@ public class IndexInfo {
 
   @Column(name = "base_index", nullable = false)
   private Float baseIndex;
-
-  @Column(name = "source_type", nullable = false, length = 32, columnDefinition = "VARCHAR(32) CHECK (source_type IN ('USER', 'OPEN_API'))")
+  
+  @Enumerated(EnumType.STRING)
+  @Column(name = "source_type", nullable = false, length = 32)
   private SourceType sourceType;
 
   @Column(name = "favorite")
