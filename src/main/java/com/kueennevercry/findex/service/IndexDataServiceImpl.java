@@ -4,7 +4,9 @@ import com.kueennevercry.findex.dto.ChartPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.dto.response.IndexDataResponse;
+import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
+import com.kueennevercry.findex.repository.IndexDataRepository;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,8 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   private final OpenApiClient openApiClient;
   private String STOCK_INDEX_ENDPOINT = "/getStockMarketIndex";
+
+  private final IndexDataRepository indexDataRepository;
 
   @Override
   public IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
@@ -54,6 +59,29 @@ public class IndexDataServiceImpl implements IndexDataService {
     );
   }
 
+  @Override
+  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId, String periodType,
+      int limit) {
+    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
+        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    LocalDate beforeBaseDate = calculateStartDate(baseDate,
+        PeriodType.valueOf(periodType.toUpperCase()));
+
+    List<RankedIndexPerformanceDto> raw = indexDataRepository.findRankedPerformances(
+        baseDate, beforeBaseDate, indexInfoId
+    );
+
+    // 정렬 + 랭킹 부여
+    List<RankedIndexPerformanceDto> sorted = raw.stream()
+        .sorted(Comparator.comparingDouble(dto -> -dto.performance().fluctuationRate()))
+        .limit(limit)
+        .toList();
+
+    return IntStream.range(0, sorted.size())
+        .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
+        .toList();
+  }
+
   private List<ChartPoint> calculateMovingAverage(List<ChartPoint> points, int windowSize) {
     List<ChartPoint> result = new ArrayList<>();
     for (int i = 0; i <= points.size() - windowSize; i++) {
@@ -65,5 +93,14 @@ public class IndexDataServiceImpl implements IndexDataService {
       result.add(new ChartPoint(points.get(i).date(), average));
     }
     return result;
+  }
+
+  private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {
+    return switch (type) {
+      case DAILY -> baseDate.minusDays(1);
+      case WEEKLY -> baseDate.minusWeeks(1);
+      case MONTHLY -> baseDate.minusMonths(1);
+      default -> baseDate;
+    };
   }
 }
