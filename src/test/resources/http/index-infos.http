@@ -1,0 +1,2 @@
+### 지수 정보 조회 테스트
+GET http://localhost:8080/api/index-infos/173

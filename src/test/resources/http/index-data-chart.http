@@ -1,6 +1,0 @@
-### 지수 차트 조회 테스트
-GET http://localhost:8080/api/index-data/5/chart?periodType=YEARLY
-Content-Type: application/json
-
-### 지수 정보 조회 테스트
-GET http://localhost:8080/api/index-infos/173
