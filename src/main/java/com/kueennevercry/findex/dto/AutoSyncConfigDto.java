@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.dto;
 
-public record AutoSyncConfig(
+public record AutoSyncConfigDto(
     Long id,
     Long indexInfoId,
     String indexClassification,
