@@ -31,5 +31,4 @@ public class AutoSyncConfigService {
         index.getIndexName()
     );
   }
-
 }
