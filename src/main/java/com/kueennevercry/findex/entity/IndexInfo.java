@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.entity;
 
+import com.kueennevercry.findex.common.SourceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +36,7 @@ public class IndexInfo {
 
   @Column(name = "base_index", nullable = false)
   private Float baseIndex;
-  
+
   @Enumerated(EnumType.STRING)
   @Column(name = "source_type", nullable = false, length = 32)
   private SourceType sourceType;
@@ -57,9 +58,5 @@ public class IndexInfo {
   @PreUpdate // 데이터 수정 시 자동으로 실행
   protected void onUpdate() {
     updatedAt = LocalDateTime.now();
-  }
-
-  public enum SourceType {
-    USER, OPEN_API
   }
 }
