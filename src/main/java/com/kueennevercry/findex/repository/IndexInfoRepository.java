@@ -20,4 +20,8 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
    * - boolean existsById(Long id): ID 존재 여부 확인
    */
 
+  /**
+   * 지수명과 지수 분류명 조합 중복 검증
+   */
+  boolean existsByIndexNameAndIndexClassification(String indexName, String indexClassification);
 }
