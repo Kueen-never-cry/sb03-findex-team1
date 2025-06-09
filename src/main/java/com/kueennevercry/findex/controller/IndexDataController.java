@@ -1,14 +1,28 @@
 package com.kueennevercry.findex.controller;
 
+import com.kueennevercry.findex.dto.IndexDataDto;
+import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
+import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
+import com.kueennevercry.findex.entity.IndexData;
+import com.kueennevercry.findex.dto.PeriodType;
+import com.kueennevercry.findex.dto.response.IndexChartResponse;
+import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.service.IndexDataService;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,5 +42,45 @@ public class IndexDataController {
     IndexChartResponse response = indexDataService.getChart(id, periodType);
     return ResponseEntity.ok(response);
   }
+
+  //----------- 지수 데이터 --------------//
+  @GetMapping("/{indexInfoId}")
+  public ResponseEntity<List<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
+      @PathVariable Long indexInfoId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      @RequestParam(defaultValue = "baseDate") String sortBy,
+      @RequestParam(defaultValue = "desc") String sortDirection
+  ) {
+    return ResponseEntity.ok(
+        indexDataService.findAllByBaseDateBetween(indexInfoId, from, to, sortBy, sortDirection));
+  }
+
+  @PostMapping
+  public ResponseEntity<IndexData> create(
+      @RequestBody IndexDataCreateDto dto
+  ) {
+    IndexData indexData = indexDataService.create(dto);
+
+    return ResponseEntity.ok(indexData);
+  }
+
+  @PatchMapping("{id}")
+  public ResponseEntity<IndexData> update(
+      @PathVariable Long id,
+      @RequestBody IndexDataUpdateDto dto
+  ) {
+    IndexData indexData = indexDataService.update(id, dto);
+
+    return ResponseEntity.ok(indexData);
+  }
+
+  @DeleteMapping("{id}")
+  public void delete(
+      @PathVariable Long id
+  ) {
+    indexDataService.delete(id);
+  }
+
 }
 
