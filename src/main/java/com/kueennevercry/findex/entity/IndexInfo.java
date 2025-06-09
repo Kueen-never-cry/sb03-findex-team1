@@ -2,6 +2,7 @@ package com.kueennevercry.findex.entity;
 
 import com.kueennevercry.findex.common.SourceType;
 import jakarta.persistence.*;
+import lombok.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,9 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @Table(name = "index_info")
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class IndexInfo {
