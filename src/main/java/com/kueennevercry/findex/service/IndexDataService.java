@@ -5,6 +5,7 @@ import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
+import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,9 +13,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface IndexDataService {
-
-  IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
-      throws IOException, URISyntaxException;
 
   // 지수 데이터
   IndexData create(IndexDataCreateRequest request);
@@ -25,4 +23,10 @@ public interface IndexDataService {
   IndexData update(Long id, IndexDataUpdateRequest request);
 
   void delete(Long id);
+
+  // 대시보드
+  IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
+      throws IOException, URISyntaxException;
+
+  List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);
 }

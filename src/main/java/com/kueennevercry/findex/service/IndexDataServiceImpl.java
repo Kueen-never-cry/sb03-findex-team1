@@ -7,12 +7,14 @@ import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.dto.response.IndexDataResponse;
+import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.kueennevercry.findex.repository.IndexDataRepository;
+import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,8 +24,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import com.kueennevercry.findex.repository.IndexInfoRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class IndexDataServiceImpl implements IndexDataService {
       IndexDataCreateRequest request
   ) {
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
-            .orElseThrow(() -> new IllegalArgumentException("Index Info not found"));
+        .orElseThrow(() -> new IllegalArgumentException("Index Info not found"));
     LocalDate baseDate = request.baseDate();
     if (indexDataRepository.existsByIndexInfoId(indexInfo.getId())
         && indexDataRepository.existsByBaseDate(baseDate)) {
@@ -116,6 +117,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     indexDataRepository.deleteById(id);
   }
 
+  //------------ 대시보드 -----------//
   @Override
   public IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException {
@@ -158,5 +160,61 @@ public class IndexDataServiceImpl implements IndexDataService {
       result.add(new ChartPoint(points.get(i).date(), average));
     }
     return result;
+  }
+
+  @Override
+  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType) {
+    List<IndexInfo> favorites = indexInfoRepository.findAllByFavoriteTrue();
+
+    LocalDate baseDate = indexDataRepository.findLatestBaseDateAcrossAll();
+    if (baseDate == null) {
+      return List.of();
+    }
+
+    LocalDate compareDate = calculateStartDate(baseDate, periodType);
+
+    List<IndexPerformanceDto> results = new ArrayList<>();
+
+    for (IndexInfo index : favorites) {
+      Optional<IndexData> currentOpt = indexDataRepository
+          .findByIndexInfoIdAndBaseDate(index.getId(), baseDate);
+      Optional<IndexData> previousOpt = indexDataRepository
+          .findClosestBeforeOrEqual(index.getId(), compareDate);
+
+      if (currentOpt.isEmpty() || previousOpt.isEmpty()) {
+        continue;
+      }
+
+      IndexData current = currentOpt.get();
+      IndexData previous = previousOpt.get();
+
+      BigDecimal currentPrice = current.getClosingPrice();
+      BigDecimal beforePrice = previous.getClosingPrice();
+      BigDecimal versus = currentPrice.subtract(beforePrice);
+      BigDecimal fluctuationRate = beforePrice.compareTo(BigDecimal.ZERO) == 0
+          ? BigDecimal.ZERO
+          : versus.divide(beforePrice, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+
+      results.add(new IndexPerformanceDto(
+          index.getId(),
+          index.getIndexClassification(),
+          index.getIndexName(),
+          versus,
+          fluctuationRate,
+          currentPrice,
+          beforePrice
+      ));
+    }
+
+    return results;
+  }
+
+  private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {
+    return switch (type) {
+      case DAILY -> baseDate.minusDays(1);
+      case WEEKLY -> baseDate.minusWeeks(1);
+      case MONTHLY -> baseDate.minusMonths(1);
+      default -> baseDate;
+    };
   }
 }

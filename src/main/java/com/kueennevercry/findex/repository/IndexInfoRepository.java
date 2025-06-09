@@ -1,6 +1,7 @@
 package com.kueennevercry.findex.repository;
 
 import com.kueennevercry.findex.entity.IndexInfo;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +10,7 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
 
   /**
    * IndexInfoRepository는 JpaRepository를 상속받아 기본적인 CRUD 연산을 제공합니다.
-   * 
+   *
    * JpaRepository -> ListCrudRepository -> CrudRepository 계층 구조를 통해 다음과 같은 메서드들이
    * 자동으로 제공됩니다:
    * - Optional<IndexInfo> findById(Long id): ID로 엔티티 조회 (Optional 반환으로 null 안전성
@@ -24,4 +25,9 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
    * 지수명과 지수 분류명 조합 중복 검증
    */
   boolean existsByIndexNameAndIndexClassification(String indexName, String indexClassification);
+
+  /**
+   * 지수 정보 중 favorite = true인 것을 조회
+   */
+  List<IndexInfo> findAllByFavoriteTrue();
 }

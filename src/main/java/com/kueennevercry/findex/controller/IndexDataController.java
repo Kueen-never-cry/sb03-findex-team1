@@ -1,12 +1,14 @@
 package com.kueennevercry.findex.controller;
 
 import com.kueennevercry.findex.dto.IndexDataDto;
+import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
-import com.kueennevercry.findex.entity.IndexData;
-import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
+import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
+import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
+import com.kueennevercry.findex.service.IndexDataServiceImpl;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -30,15 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class IndexDataController {
 
   private final IndexDataService indexDataService;
-
-  @GetMapping("/{id}/chart")
-  public ResponseEntity<IndexChartResponse> getChart(
-      @PathVariable Long id,
-      @RequestParam PeriodType periodType
-  ) throws IOException, URISyntaxException {
-    IndexChartResponse response = indexDataService.getChart(id, periodType);
-    return ResponseEntity.ok(response);
-  }
+  private final IndexDataServiceImpl indexDataServiceImpl;
 
   //----------- 지수 데이터 --------------//
   @GetMapping("/{indexInfoId}")
@@ -86,6 +80,23 @@ public class IndexDataController {
       @PathVariable Long id
   ) {
     indexDataService.delete(id);
+  }
+
+  //----------- 대시보드 --------------//
+  @GetMapping("/favorite")
+  public List<IndexPerformanceDto> getFavoriteIndexPerformances(
+      @RequestParam(defaultValue = "DAILY") PeriodType periodType
+  ) {
+    return indexDataServiceImpl.getFavoritePerformances(periodType);
+  }
+
+  @GetMapping("/{id}/chart")
+  public ResponseEntity<IndexChartResponse> getChart(
+      @PathVariable Long id,
+      @RequestParam PeriodType periodType
+  ) throws IOException, URISyntaxException {
+    IndexChartResponse response = indexDataService.getChart(id, periodType);
+    return ResponseEntity.ok(response);
   }
 
 }
