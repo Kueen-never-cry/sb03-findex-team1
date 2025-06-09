@@ -13,6 +13,6 @@ public class CursorPageResponseSyncJobDto {
   private final String nextCursor;
   private final Long nextIdAfter;
   private final int size;
-  private final int totalElements;
+  private final Long totalElements;
   private final boolean hasNext;
 }
