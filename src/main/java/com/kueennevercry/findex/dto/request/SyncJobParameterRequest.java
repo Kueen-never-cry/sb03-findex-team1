@@ -17,7 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class SyncJobParameterRequest {
 
   private IntegrationJobType jobType;
-  private Integer indexInfoId;
+  private Long indexInfoId;
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
   private LocalDate baseDateFrom;
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -28,7 +28,7 @@ public class SyncJobParameterRequest {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private LocalDateTime jobTimeTo;
   private IntegrationResultType status;
-  private Integer idAfter;
+  private Long idAfter;
   private Integer cursor;
   private String sortField; // TODO : 이거 어떤 타입 있는지 알아봐야함 ex) jobTime
   private String sortDirection; // desc
