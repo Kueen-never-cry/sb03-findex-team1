@@ -1,17 +1,28 @@
 package com.kueennevercry.findex.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
+import com.kueennevercry.findex.entity.SourceType;
+import java.time.Instant;
 import java.time.LocalDate;
+import lombok.Builder;
 
+@Builder
 public record IndexDataDto(
-    @JsonFormat(pattern = "yyyyMMdd")
-    @JsonProperty("basDt")
+    Long id,
+    IndexInfoDto indexInfoDto,
     LocalDate baseDate,
-    
-    @JsonProperty("clpr")
-    BigDecimal closingPrice
+    SourceType sourceType,
+    Double marketPrice,
+    Double closingPrice,
+    Double highPrice,
+    Double lowPrice,
+    Double versus,
+    Double fluctuationRate,
+    Long tradingQuantity,
+    Long tradingPrice,
+    Long marketTotalAmount,
+    Instant createdAt,
+    Instant updatedAt
+
 ) {
 
 }

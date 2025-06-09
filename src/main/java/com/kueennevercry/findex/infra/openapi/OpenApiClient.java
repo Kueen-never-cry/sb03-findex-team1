@@ -1,6 +1,7 @@
 package com.kueennevercry.findex.infra.openapi;
 
 import com.kueennevercry.findex.dto.response.IndexDataDto;
+import com.kueennevercry.findex.entity.IndexData;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;

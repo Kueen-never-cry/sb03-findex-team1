@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.dto.response;
 
-import com.kueennevercry.findex.dto.ChartPoint;
+import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import java.util.List;
 
@@ -9,9 +9,9 @@ public record IndexChartDto(
     String indexClassification,
     String indexName,
     PeriodType periodType,
-    List<ChartPoint> dataPoints,
-    List<ChartPoint> ma5DataPoints,
-    List<ChartPoint> ma20DataPoints
+    List<ChartDataPoint> dataPoints,
+    List<ChartDataPoint> ma5DataPoints,
+    List<ChartDataPoint> ma20DataPoints
 ) {
 
 }

@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.ChartPoint;
+import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
@@ -14,8 +14,6 @@ import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -72,7 +70,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<com.kueennevercry.findex.dto.IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
+  public List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
 
     if (indexInfoId == null) {
       indexInfoId = 3L;
@@ -84,7 +82,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<com.kueennevercry.findex.dto.IndexDataDto> findAllByBaseDateBetween(Long indexInfoId,
+  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId,
       LocalDate from, LocalDate to,
       String sortBy, String sortDirection) {
 
@@ -145,13 +143,13 @@ public class IndexDataServiceImpl implements IndexDataService {
         startDate,
         endDate);
 
-    List<ChartPoint> dataPoints = rawData.stream()
-        .map(data -> new ChartPoint(data.baseDate(), data.closingPrice()))
-        .sorted(Comparator.comparing(ChartPoint::date).reversed())
+    List<ChartDataPoint> dataPoints = rawData.stream()
+        .map(data -> new ChartDataPoint(data.baseDate(), data.closingPrice()))
+        .sorted(Comparator.comparing(ChartDataPoint::date).reversed())
         .toList();
 
-    List<ChartPoint> ma5 = calculateMovingAverage(dataPoints, 5);
-    List<ChartPoint> ma20 = calculateMovingAverage(dataPoints, 20);
+    List<ChartDataPoint> ma5 = calculateMovingAverage(dataPoints, 5);
+    List<ChartDataPoint> ma20 = calculateMovingAverage(dataPoints, 20);
 
     return new IndexChartDto(
         indexInfoId,
@@ -177,27 +175,27 @@ public class IndexDataServiceImpl implements IndexDataService {
     );
 
     // 정렬 + 랭킹 부여
-    List<RankedIndexPerformanceDto> sorted = raw.stream()
-        .sorted(Comparator.comparingDouble(dto -> -dto.performance().fluctuationRate()))
-        .limit(limit)
-        .toList();
+List<RankedIndexPerformanceDto> sorted = raw.stream()
+    .sorted(Comparator.comparing((RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
+    .limit(limit)
+    .toList();
 
     return IntStream.range(0, sorted.size())
         .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
         .toList();
   }
 
-  private List<ChartPoint> calculateMovingAverage(List<ChartPoint> points, int windowSize) {
-    List<ChartPoint> result = new ArrayList<>();
-    for (int i = 0; i <= points.size() - windowSize; i++) {
-      BigDecimal sum = BigDecimal.ZERO;
-      for (int j = 0; j < windowSize; j++) {
-        sum = sum.add(points.get(i + j).value());
+  private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {
+      List<ChartDataPoint> result = new ArrayList<>();
+      for (int i = 0; i <= points.size() - windowSize; i++) {
+          double sum = 0.0;
+          for (int j = 0; j < windowSize; j++) {
+              sum += points.get(i + j).value();
+          }
+          double average = sum / windowSize;
+          result.add(new ChartDataPoint(points.get(i).date(), average));
       }
-      BigDecimal average = sum.divide(BigDecimal.valueOf(windowSize), RoundingMode.HALF_UP);
-      result.add(new ChartPoint(points.get(i).date(), average));
-    }
-    return result;
+      return result;
   }
 
   private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {

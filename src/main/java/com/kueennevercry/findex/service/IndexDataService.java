@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.IndexDataDto;
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;

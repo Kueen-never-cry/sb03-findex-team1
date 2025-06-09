@@ -30,13 +30,15 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
           info.id,
           info.indexClassification,
           info.indexName,
-          (curr.closingPrice - prev.closingPrice) * 1.0f,
-          CASE
-            WHEN prev.closingPrice <> 0 THEN ((curr.closingPrice - prev.closingPrice) / prev.closingPrice) * 100.0f
-            ELSE 0.0f
-          END,
-          curr.closingPrice,
-          prev.closingPrice
+          cast((curr.closingPrice - prev.closingPrice) * 1.0f as BigDecimal),
+          cast(
+            case when prev.closingPrice <> 0
+              then ((curr.closingPrice - prev.closingPrice) / prev.closingPrice) * 100.0f
+              else 0.0f
+            end as BigDecimal
+          ),
+          cast(curr.closingPrice as BigDecimal),
+          cast(prev.closingPrice as BigDecimal)
         )
       )
       FROM IndexData curr
