@@ -4,3 +4,17 @@ Content-Type: application/json
 
 ### 지수 정보 조회 테스트
 GET http://localhost:8080/api/index-infos/173
+
+### 지수 정보 등록 테스트
+POST http://localhost:8080/api/index-infos
+Content-Type: application/json
+
+{
+  "indexClassification": "테마분류",
+  "indexName": "나스닥100",
+  "employedItemsCount": 50,
+  "basePointInTime": "2024-01-01",
+  "baseIndex": 1000.0,
+  "sourceType": "USER",
+  "favorite": true
+}

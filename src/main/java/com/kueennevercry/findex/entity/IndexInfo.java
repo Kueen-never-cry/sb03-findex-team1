@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.entity;
 
+import com.kueennevercry.findex.common.SourceType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.AllArgsConstructor;
@@ -60,9 +61,5 @@ public class IndexInfo {
   @PreUpdate // 데이터 수정 시 자동으로 실행
   protected void onUpdate() {
     updatedAt = LocalDateTime.now();
-  }
-
-  public enum SourceType {
-    USER, OPEN_API
   }
 }
