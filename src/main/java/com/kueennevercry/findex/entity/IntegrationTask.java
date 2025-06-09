@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -38,7 +37,7 @@ public class IntegrationTask {
   private String worker;
 
   @Column(name = "job_time", nullable = false)
-  private LocalDateTime jobTime;
+  private Instant jobTime;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "result", nullable = false)
