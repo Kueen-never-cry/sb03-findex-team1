@@ -6,18 +6,21 @@ import com.kueennevercry.findex.service.IndexInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/index-infos")
 @RequiredArgsConstructor
-public class IndexInfoController {
+public class
+IndexInfoController {
 
   private final IndexInfoService indexInfoService;
 
   /**
-   * 특정 ID의 지수 정보 조회
-   * GET /api/index-infos/{id}
+   * 특정 ID의 지수 정보 조회 GET /api/index-infos/{id}
    */
   @GetMapping("/{id}")
   public ResponseEntity<IndexInfoDto> getIndexInfo(@PathVariable Long id) {
