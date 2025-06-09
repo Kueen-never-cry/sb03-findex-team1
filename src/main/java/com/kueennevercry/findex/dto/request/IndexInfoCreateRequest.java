@@ -1,13 +1,12 @@
 package com.kueennevercry.findex.dto.request;
 
-import com.kueennevercry.findex.common.SourceType;
 import com.kueennevercry.findex.entity.IndexInfo;
+import com.kueennevercry.findex.entity.SourceType;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
