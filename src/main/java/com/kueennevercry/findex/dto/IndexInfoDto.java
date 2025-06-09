@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.dto;
 
+import com.kueennevercry.findex.common.SourceType;
 import com.kueennevercry.findex.entity.IndexInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,7 @@ public class IndexInfoDto {
   private Integer employedItemsCount;
   private LocalDate basePointInTime;
   private Float baseIndex;
-  private IndexInfo.SourceType sourceType;
+  private SourceType sourceType;
   private Boolean favorite;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
