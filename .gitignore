@@ -51,6 +51,8 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+db.yaml
+application.yaml
 
 ### NetBeans ###
 /nbproject/private/
