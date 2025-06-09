@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.dto;
 
+import com.kueennevercry.findex.common.SourceType;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
 import java.time.LocalDate;
