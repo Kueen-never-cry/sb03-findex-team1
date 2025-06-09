@@ -2,13 +2,14 @@ package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.config.AutoSyncConfig;
 import com.kueennevercry.findex.dto.AutoSyncConfigDto;
+import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.AutoSyncConfigMapper;
 import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +26,11 @@ public class AutoSyncConfigService {
     config.setEnabled(enabled);
 
     IndexInfo index = config.getIndexInfo();
-    return autoSyncConfigMapper.toDto(
-        config,
-        index.getIndexClassification(),
-        index.getIndexName()
+    IndexInfoSummaryDto indexInfoDto = new IndexInfoSummaryDto(
+        index.getId(),
+        index.getIndexName(),
+        index.getIndexClassification()
     );
+    return autoSyncConfigMapper.toDto(config, indexInfoDto);
   }
 }
