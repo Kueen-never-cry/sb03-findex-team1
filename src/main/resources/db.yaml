@@ -1,8 +1,9 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/findex
-    username: postgres
-    password: System1234
+    username: findex
+    password: findex1234
+
     driver-class-name: org.postgresql.Driver
 
   jpa:
