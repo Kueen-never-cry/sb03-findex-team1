@@ -2,8 +2,8 @@ package com.kueennevercry.findex.dto;
 
 import com.kueennevercry.findex.entity.IntegrationJobType;
 import com.kueennevercry.findex.entity.IntegrationResultType;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.Getter;
 
 /*연동 작업 DTO */
@@ -14,6 +14,6 @@ public class SyncJobDto {
   private IntegrationJobType jobType;
   private Long indexInfoId;
   private LocalDate targetDate;
-  private LocalDateTime jobTime;
+  private Instant jobTime;
   private IntegrationResultType result;
 }
