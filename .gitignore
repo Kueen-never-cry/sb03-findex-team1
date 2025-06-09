@@ -80,3 +80,9 @@ out/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# generated files
+src/**/generated
+
+# properties
+db.yaml
