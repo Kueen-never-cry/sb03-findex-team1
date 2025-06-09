@@ -12,7 +12,7 @@ public class SyncJobDto {
 
   private Long id;
   private IntegrationJobType jobType;
-  private int indexInfoId;
+  private Long indexInfoId;
   private LocalDate targetDate;
   private LocalDateTime jobTime;
   private IntegrationResultType result;

@@ -6,7 +6,7 @@ import java.util.List;
 /* 지수 데이터 연동 요청 */
 public class IndexDataSyncRequest {
 
-  List<Integer> indexInfoIds;
+  List<Long> indexInfoIds;
   LocalDate baseDateFrom;
   LocalDate baseDateTo;
 }
