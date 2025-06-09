@@ -43,12 +43,21 @@ public class IndexDataController {
   //----------- 지수 데이터 --------------//
   @GetMapping("/{indexInfoId}")
   public ResponseEntity<List<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
-      @PathVariable Long indexInfoId,
+      @PathVariable(required = false) Long indexInfoId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(defaultValue = "baseDate") String sortBy,
       @RequestParam(defaultValue = "desc") String sortDirection
   ) {
+    if (indexInfoId == null) {
+      indexInfoId = 3L;
+    }
+    if (from == null) {
+      from = LocalDate.of(1900, 1, 1);
+    }
+    if (to == null) {
+      to = LocalDate.now();
+    }
     return ResponseEntity.ok(
         indexDataService.findAllByBaseDateBetween(indexInfoId, from, to, sortBy, sortDirection));
   }

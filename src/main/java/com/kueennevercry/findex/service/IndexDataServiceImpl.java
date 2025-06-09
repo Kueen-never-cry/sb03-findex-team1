@@ -75,27 +75,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
-
-    if (indexInfoId == null) {
-      indexInfoId = 3L;
-    }
-
-    return indexDataRepository.findAllByIndexInfo_Id(indexInfoId).stream()
-        .map(indexDataMapper::toDto)
-        .toList();
-  }
-
-  @Override
   public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
       String sortBy, String sortDirection) {
-
-    if (from == null) {
-      from = LocalDate.of(1900, 1, 1);
-    }
-    if (to == null) {
-      to = LocalDate.now();
-    }
 
     Sort.Direction direction;
 

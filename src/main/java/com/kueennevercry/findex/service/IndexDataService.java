@@ -19,8 +19,6 @@ public interface IndexDataService {
   // 지수 데이터
   IndexData create(IndexDataCreateRequest request);
 
-  List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId);
-
   List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
       String sortBy, String sortDirection);
 
