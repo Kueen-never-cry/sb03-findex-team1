@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record IndexDataResponse(
+public record IndexDataDto(
     @JsonFormat(pattern = "yyyyMMdd")
     @JsonProperty("basDt")
     LocalDate baseDate,

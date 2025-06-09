@@ -4,7 +4,7 @@ import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
-import com.kueennevercry.findex.dto.response.IndexChartResponse;
+import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
@@ -70,13 +70,13 @@ public class IndexDataController {
   ) {
     indexDataService.delete(id);
   }
-  
+
   @GetMapping("/{id}/chart")
-  public ResponseEntity<IndexChartResponse> getChart(
+  public ResponseEntity<IndexChartDto> getChart(
       @PathVariable Long id,
       @RequestParam PeriodType periodType
   ) throws IOException, URISyntaxException {
-    IndexChartResponse response = indexDataService.getChart(id, periodType);
+    IndexChartDto response = indexDataService.getChart(id, periodType);
     return ResponseEntity.ok(response);
   }
 

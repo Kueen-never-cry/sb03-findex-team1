@@ -1,12 +1,11 @@
 package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.dto.ChartPoint;
-import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
-import com.kueennevercry.findex.dto.response.IndexChartResponse;
-import com.kueennevercry.findex.dto.response.IndexDataResponse;
+import com.kueennevercry.findex.dto.response.IndexChartDto;
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
@@ -73,7 +72,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
+  public List<com.kueennevercry.findex.dto.IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
 
     if (indexInfoId == null) {
       indexInfoId = 3L;
@@ -85,7 +84,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
+  public List<com.kueennevercry.findex.dto.IndexDataDto> findAllByBaseDateBetween(Long indexInfoId,
+      LocalDate from, LocalDate to,
       String sortBy, String sortDirection) {
 
     if (from == null) {
@@ -134,14 +134,14 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
+  public IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException {
     // 임의의 값으로 테스트
     String indexCode = "KRX 300 소재";
     LocalDate endDate = LocalDate.now();
     LocalDate startDate = endDate.minusMonths(6);
 
-    List<IndexDataResponse> rawData = openApiClient.fetchIndexData(indexCode, STOCK_INDEX_ENDPOINT,
+    List<IndexDataDto> rawData = openApiClient.fetchIndexData(indexCode, STOCK_INDEX_ENDPOINT,
         startDate,
         endDate);
 
@@ -153,7 +153,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     List<ChartPoint> ma5 = calculateMovingAverage(dataPoints, 5);
     List<ChartPoint> ma20 = calculateMovingAverage(dataPoints, 20);
 
-    return new IndexChartResponse(
+    return new IndexChartDto(
         indexInfoId,
         "KRX 시리즈",
         "KRX 300 소재",

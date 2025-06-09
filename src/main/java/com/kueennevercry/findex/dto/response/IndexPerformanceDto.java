@@ -1,13 +1,15 @@
 package com.kueennevercry.findex.dto.response;
 
+import java.math.BigDecimal;
+
 public record IndexPerformanceDto(
     Long indexInfoId,
     String indexClassification,
     String indexName,
     float versus,
     float fluctuationRate,
-    float currentPrice,
-    float beforePrice
+    BigDecimal currentPrice,
+    BigDecimal beforePrice
 ) {
 
 }

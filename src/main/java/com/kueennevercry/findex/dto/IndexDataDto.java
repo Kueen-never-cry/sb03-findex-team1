@@ -1,10 +1,10 @@
 package com.kueennevercry.findex.dto;
 
+import com.kueennevercry.findex.dto.response.IndexInfoDto;
 import com.kueennevercry.findex.entity.SourceType;
-import lombok.Builder;
-
 import java.time.Instant;
 import java.time.LocalDate;
+import lombok.Builder;
 
 @Builder
 public record IndexDataDto(
