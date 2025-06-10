@@ -1,11 +1,12 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
-import com.kueennevercry.findex.dto.response.IndexChartResponse;
+import com.kueennevercry.findex.dto.response.IndexChartDto;
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
+import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,8 +26,11 @@ public interface IndexDataService {
   void delete(Long id);
 
   // 대시보드
-  IndexChartResponse getChart(Long indexInfoId, PeriodType periodType)
+  IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException;
+
+  List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId, String periodType,
+      int limit);
 
   List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);
 }

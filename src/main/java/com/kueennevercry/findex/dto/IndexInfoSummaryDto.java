@@ -5,4 +5,6 @@ public record IndexInfoSummaryDto(
     Long id,
     String indexName,
     String indexClassification
-) {}
+) {
+
+}

@@ -14,10 +14,12 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "integration_tasks")

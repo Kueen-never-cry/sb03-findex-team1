@@ -1,4 +1,4 @@
-package com.kueennevercry.findex.dto;
+package com.kueennevercry.findex.dto.response;
 
 import com.kueennevercry.findex.entity.SourceType;
 import lombok.Builder;

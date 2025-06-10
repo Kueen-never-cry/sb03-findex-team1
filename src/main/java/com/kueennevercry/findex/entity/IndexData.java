@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -27,6 +29,7 @@ import lombok.ToString;
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @Table(name = "index_data")
 public class IndexData {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -70,15 +73,27 @@ public class IndexData {
   private Long marketTotalAmount;
 
   @Column(name = "created_at")
-  private final Instant createdAt;
+  private Instant createdAt;
 
   @Column(name = "updated_at")
   private Instant updatedAt;
 
+  @PrePersist // 데이터 생성 시 자동으로 실행
+  protected void onCreate() {
+    createdAt = Instant.now();
+  }
+
+  @PreUpdate // 데이터 수정 시 자동으로 실행
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
+
   @Builder
-  public IndexData(IndexInfo indexInfo, LocalDate baseDate, SourceType sourceType, BigDecimal marketPrice,
-                   BigDecimal closingPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
-                   Long tradingQuantity, Long tradingPrice, Long marketTotalAmount) {
+  public IndexData(IndexInfo indexInfo, LocalDate baseDate, SourceType sourceType,
+      BigDecimal marketPrice,
+      BigDecimal closingPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus,
+      BigDecimal fluctuationRate,
+      Long tradingQuantity, Long tradingPrice, Long marketTotalAmount) {
 
     this.indexInfo = indexInfo;
     this.baseDate = baseDate;
@@ -92,13 +107,11 @@ public class IndexData {
     this.tradingQuantity = tradingQuantity;
     this.marketTotalAmount = marketTotalAmount;
     this.tradingPrice = tradingPrice;
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
   }
 
   public void update(BigDecimal marketPrice, BigDecimal closingPrice,
-                     BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
-                     Long tradingQuantity) {
+      BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
+      Long tradingQuantity) {
 
     boolean anyValueUpdated = false;
 
