@@ -3,6 +3,7 @@ package com.kueennevercry.findex.controller;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
@@ -35,7 +36,7 @@ public class IndexDataController {
 
   //----------- 지수 데이터 --------------//
   @GetMapping
-  public ResponseEntity<List<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
+  public ResponseEntity<CursorPageResponse<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
       @RequestParam(required = false) Long indexInfoId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -56,7 +57,8 @@ public class IndexDataController {
     }
 
     return ResponseEntity.ok(
-        indexDataService.findAllByBaseDateBetween(indexInfoId, startDate, endDate, sortField,
+        indexDataService.findAllByBaseDateBetween(indexInfoId, startDate, endDate, idAfter, cursor,
+            sortField,
             sortDirection, size));
   }
 
