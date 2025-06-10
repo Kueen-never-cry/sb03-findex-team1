@@ -6,6 +6,8 @@ import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.IndexInfoMapper;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
+import com.kueennevercry.findex.repository.IndexDataRepository;
+import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,8 @@ public class IndexInfoService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexInfoMapper indexInfoMapper;
+  private final IndexDataRepository indexDataRepository;
+  private final AutoSyncConfigRepository autoSyncConfigRepository;
 
   /**
    * ID로 지수 정보 조회
@@ -84,5 +88,33 @@ public class IndexInfoService {
     // 3. 메서드 종료 시 @Transactional에 의해 자동으로 UPDATE 쿼리 실행
     // repository.save() 호출 불필요 (더티 체킹이 자동 처리)
     return indexInfoMapper.toDto(indexInfo);
+  }
+
+  /**
+   * 지수 정보 삭제
+   * 
+   * 삭제 순서:
+   * 1. 지수 정보 존재 여부 확인
+   * 2. 연관된 지수 데이터(IndexData) 삭제
+   * 3. 연관된 자동 연동 설정(AutoSyncConfig) 삭제
+   * 4. 지수 정보(IndexInfo) 삭제
+   * 
+   * @Transactional을 통해 모든 삭제 작업이 원자적으로 실행됨
+   */
+  @Transactional // 오버라이드: readOnly = false
+  public void delete(Long id) {
+    // 1. 지수 정보 존재 여부 확인
+    if (!indexInfoRepository.existsById(id)) {
+      throw new RuntimeException("삭제할 지수 정보를 찾을 수 없습니다. ID: " + id);
+    }
+
+    // 2. 연관된 지수 데이터 삭제 (IndexData)
+    indexDataRepository.deleteAllByIndexInfoId(id);
+
+    // 3. 연관된 자동 연동 설정 삭제 (AutoSyncConfig)
+    autoSyncConfigRepository.deleteByIndexInfo_Id(id);
+
+    // 4. 지수 정보 삭제 (IndexInfo)
+    indexInfoRepository.deleteById(id);
   }
 }
