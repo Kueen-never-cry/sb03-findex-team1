@@ -1,17 +1,11 @@
-package com.kueennevercry.findex.dto.response;
-
-import com.kueennevercry.findex.entity.SourceType;
-import lombok.Builder;
+package com.kueennevercry.findex.dto.request;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Builder
-public record IndexDataDto(
-    Long id,
+public record IndexDataCreateRequest(
     Long indexInfoId,
     LocalDate baseDate,
-    SourceType sourceType,
     BigDecimal marketPrice,
     BigDecimal closingPrice,
     BigDecimal highPrice,
@@ -21,7 +15,6 @@ public record IndexDataDto(
     Long tradingQuantity,
     Long tradingPrice,
     Long marketTotalAmount
-
 ) {
 
 }

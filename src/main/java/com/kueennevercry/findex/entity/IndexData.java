@@ -9,12 +9,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,8 +28,6 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @Table(name = "index_data")
-@AllArgsConstructor
-@Builder
 public class IndexData {
 
   @Id
@@ -74,10 +73,20 @@ public class IndexData {
   private Long marketTotalAmount;
 
   @Column(name = "created_at")
-  private final Instant createdAt;
+  private Instant createdAt;
 
   @Column(name = "updated_at")
   private Instant updatedAt;
+
+  @PrePersist // 데이터 생성 시 자동으로 실행
+  protected void onCreate() {
+    createdAt = Instant.now();
+  }
+
+  @PreUpdate // 데이터 수정 시 자동으로 실행
+  protected void onUpdate() {
+    updatedAt = Instant.now();
+  }
 
   @Builder
   public IndexData(IndexInfo indexInfo, LocalDate baseDate, SourceType sourceType,
@@ -98,8 +107,6 @@ public class IndexData {
     this.tradingQuantity = tradingQuantity;
     this.marketTotalAmount = marketTotalAmount;
     this.tradingPrice = tradingPrice;
-    this.createdAt = Instant.now();
-    this.updatedAt = Instant.now();
   }
 
   public void update(BigDecimal marketPrice, BigDecimal closingPrice,
