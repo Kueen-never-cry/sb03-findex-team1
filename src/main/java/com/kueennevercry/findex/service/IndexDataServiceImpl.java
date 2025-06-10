@@ -6,6 +6,7 @@ import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
+import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
@@ -15,12 +16,15 @@ import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -114,6 +118,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     indexDataRepository.deleteById(id);
   }
 
+  //------------ 대시보드 -----------//
   @Override
   public IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException {
@@ -143,6 +148,53 @@ public class IndexDataServiceImpl implements IndexDataService {
     return IntStream.range(0, sorted.size())
         .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
         .toList();
+  }
+
+  @Override
+  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType) {
+    List<IndexInfo> favorites = indexInfoRepository.findAllByFavoriteTrue();
+
+    LocalDate baseDate = indexDataRepository.findLatestBaseDateAcrossAll();
+    if (baseDate == null) {
+      return List.of();
+    }
+
+    LocalDate compareDate = calculateStartDate(baseDate, periodType);
+
+    List<IndexPerformanceDto> results = new ArrayList<>();
+
+    for (IndexInfo index : favorites) {
+      Optional<IndexData> currentData = indexDataRepository
+          .findByIndexInfoIdAndBaseDate(index.getId(), baseDate);
+      Optional<IndexData> previousData = indexDataRepository
+          .findClosestBeforeOrEqual(index.getId(), compareDate);
+
+      if (currentData.isEmpty() || previousData.isEmpty()) {
+        continue;
+      }
+
+      IndexData current = currentData.get();
+      IndexData previous = previousData.get();
+
+      BigDecimal currentPrice = current.getClosingPrice();
+      BigDecimal beforePrice = previous.getClosingPrice();
+      BigDecimal versus = currentPrice.subtract(beforePrice);
+      BigDecimal fluctuationRate = beforePrice.compareTo(BigDecimal.ZERO) == 0
+          ? BigDecimal.ZERO
+          : versus.divide(beforePrice, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+
+      results.add(new IndexPerformanceDto(
+          index.getId(),
+          index.getIndexClassification(),
+          index.getIndexName(),
+          versus,
+          fluctuationRate,
+          currentPrice,
+          beforePrice
+      ));
+    }
+
+    return results;
   }
 
   private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {

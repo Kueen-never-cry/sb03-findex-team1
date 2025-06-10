@@ -1,6 +1,7 @@
 package com.kueennevercry.findex.repository;
 
 import com.kueennevercry.findex.entity.IndexInfo;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -24,4 +25,9 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
    * 지수명과 지수 분류명 조합 중복 검증
    */
   boolean existsByIndexNameAndIndexClassification(String indexName, String indexClassification);
+
+  /**
+   * 지수 정보 중 favorite = true인 것을 조회
+   */
+  List<IndexInfo> findAllByFavoriteTrue();
 }
