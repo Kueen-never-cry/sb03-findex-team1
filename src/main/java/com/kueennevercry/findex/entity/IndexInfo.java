@@ -10,12 +10,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -48,7 +48,7 @@ public class IndexInfo {
   private LocalDate basePointInTime;
 
   @Column(name = "base_index", nullable = false)
-  private Float baseIndex;
+  private BigDecimal baseIndex;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "source_type", nullable = false, length = 32)
@@ -58,18 +58,18 @@ public class IndexInfo {
   private Boolean favorite;
 
   @Column(name = "created_at", nullable = false)
-  private LocalDateTime createdAt;
+  private Instant createdAt;
 
   @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
+  private Instant updatedAt;
 
   @PrePersist // 데이터 생성 시 자동으로 실행
   protected void onCreate() {
-    createdAt = LocalDateTime.now();
+    createdAt = Instant.now();
   }
 
   @PreUpdate // 데이터 수정 시 자동으로 실행
   protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
+    updatedAt = Instant.now();
   }
 }
