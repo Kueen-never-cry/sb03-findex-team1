@@ -3,26 +3,24 @@ package com.kueennevercry.findex.dto;
 import com.kueennevercry.findex.entity.SourceType;
 import lombok.Builder;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
 public record IndexDataDto(
     Long id,
-    IndexInfoDto indexInfoDto,
+    Long indexInfoId,
     LocalDate baseDate,
     SourceType sourceType,
-    Double marketPrice,
-    Double closingPrice,
-    Double highPrice,
-    Double lowPrice,
-    Double versus,
-    Double fluctuationRate,
+    BigDecimal marketPrice,
+    BigDecimal closingPrice,
+    BigDecimal highPrice,
+    BigDecimal lowPrice,
+    BigDecimal versus,
+    BigDecimal fluctuationRate,
     Long tradingQuantity,
     Long tradingPrice,
-    Long marketTotalAmount,
-    Instant createdAt,
-    Instant updatedAt
+    Long marketTotalAmount
 
 ) {
 

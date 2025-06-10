@@ -14,7 +14,6 @@ import java.util.Optional;
 @Repository
 public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
-    List<IndexData> findAllByIndexInfo_Id(Long indexInfoId);
     List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to, Sort sort);
     boolean existsByIndexInfoId(Long indexInfoId);
     boolean existsByBaseDate(LocalDate baseDate);

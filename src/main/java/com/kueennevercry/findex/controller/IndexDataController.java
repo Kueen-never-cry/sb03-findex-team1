@@ -1,12 +1,9 @@
 package com.kueennevercry.findex.controller;
 
 import com.kueennevercry.findex.dto.IndexDataDto;
-import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
-import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
+import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.entity.IndexData;
-import com.kueennevercry.findex.dto.PeriodType;
-import com.kueennevercry.findex.dto.response.IndexChartResponse;
-import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.service.IndexDataService;
@@ -46,19 +43,28 @@ public class IndexDataController {
   //----------- 지수 데이터 --------------//
   @GetMapping("/{indexInfoId}")
   public ResponseEntity<List<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
-      @PathVariable Long indexInfoId,
+      @PathVariable(required = false) Long indexInfoId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(defaultValue = "baseDate") String sortBy,
       @RequestParam(defaultValue = "desc") String sortDirection
   ) {
+    if (indexInfoId == null) {
+      indexInfoId = 3L;
+    }
+    if (from == null) {
+      from = LocalDate.of(1900, 1, 1);
+    }
+    if (to == null) {
+      to = LocalDate.now();
+    }
     return ResponseEntity.ok(
         indexDataService.findAllByBaseDateBetween(indexInfoId, from, to, sortBy, sortDirection));
   }
 
   @PostMapping
   public ResponseEntity<IndexData> create(
-      @RequestBody IndexDataCreateDto dto
+      @RequestBody IndexDataCreateRequest dto
   ) {
     IndexData indexData = indexDataService.create(dto);
 
@@ -68,7 +74,7 @@ public class IndexDataController {
   @PatchMapping("{id}")
   public ResponseEntity<IndexData> update(
       @PathVariable Long id,
-      @RequestBody IndexDataUpdateDto dto
+      @RequestBody IndexDataUpdateRequest dto
   ) {
     IndexData indexData = indexDataService.update(id, dto);
 

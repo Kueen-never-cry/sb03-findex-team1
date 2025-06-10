@@ -3,8 +3,8 @@ package com.kueennevercry.findex.service;
 import com.kueennevercry.findex.dto.ChartPoint;
 import com.kueennevercry.findex.dto.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
-import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
-import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
+import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.dto.response.IndexDataResponse;
 import com.kueennevercry.findex.entity.IndexData;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import com.kueennevercry.findex.repository.IndexInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,15 +37,17 @@ public class IndexDataServiceImpl implements IndexDataService {
   private final OpenApiClient openApiClient;
   private String STOCK_INDEX_ENDPOINT = "/getStockMarketIndex";
 
+  private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
   private final IndexDataMapper indexDataMapper;
 
   //------------지수 데이터-----------//
   @Override
   public IndexData create(
-      IndexDataCreateDto request
+      IndexDataCreateRequest request
   ) {
-    IndexInfo indexInfo = request.indexInfo();
+    IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
+            .orElseThrow(() -> new IllegalArgumentException("Index Info not found"));
     LocalDate baseDate = request.baseDate();
     if (indexDataRepository.existsByIndexInfoId(indexInfo.getId())
         && indexDataRepository.existsByBaseDate(baseDate)) {
@@ -71,27 +75,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
-
-    if (indexInfoId == null) {
-      indexInfoId = 3L;
-    }
-
-    return indexDataRepository.findAllByIndexInfo_Id(indexInfoId).stream()
-        .map(indexDataMapper::toDto)
-        .toList();
-  }
-
-  @Override
   public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
       String sortBy, String sortDirection) {
-
-    if (from == null) {
-      from = LocalDate.of(1900, 1, 1);
-    }
-    if (to == null) {
-      to = LocalDate.now();
-    }
 
     Sort.Direction direction;
 
@@ -110,7 +95,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public IndexData update(Long id, IndexDataUpdateDto request) {
+  public IndexData update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findById(id).orElseThrow(NoSuchElementException::new);
 
     indexData.update(
