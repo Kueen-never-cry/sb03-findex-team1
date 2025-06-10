@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.repository;
 
-import com.kueennevercry.findex.config.AutoSyncConfig;
+import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexInfo;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

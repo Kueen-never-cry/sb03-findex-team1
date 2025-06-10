@@ -5,6 +5,7 @@ import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
+import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
@@ -71,6 +72,7 @@ public class IndexDataController {
     indexDataService.delete(id);
   }
 
+  //----------- 대시보드 --------------//
   @GetMapping("/{id}/chart")
   public ResponseEntity<IndexChartDto> getChart(
       @PathVariable Long id,
@@ -88,6 +90,13 @@ public class IndexDataController {
   ) {
     return ResponseEntity.ok(
         indexDataService.getPerformanceRanking(indexInfoId, periodType, limit));
+  }
+
+  @GetMapping("/performance/favorite")
+  public List<IndexPerformanceDto> getFavoriteIndexPerformances(
+      @RequestParam(defaultValue = "DAILY") PeriodType periodType
+  ) {
+    return indexDataService.getFavoritePerformances(periodType);
   }
 }
 
