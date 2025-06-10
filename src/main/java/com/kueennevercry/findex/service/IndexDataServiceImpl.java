@@ -203,16 +203,14 @@ public class IndexDataServiceImpl implements IndexDataService {
 
     if (startDate == null) {
       startDate = indexDataRepository.findMinBaseDate(indexInfoId)
-          .orElseThrow(() -> new NoSuchElementException("해당 지수의 데이터가 존재하지 않습니다."));
+          .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
     }
 
     List<IndexData> dataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
         indexInfoId, startDate, endDate, sort);
 
     if (dataList.size() > 20_000) {
-      log.warn(
-          "지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다 (indexInfoId={}, startDate={}, endDate={})",
-          dataList.size(), indexInfoId, startDate, endDate);
+      log.warn("지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다.", dataList.size());
     }
 
     List<String[]> rows = new ArrayList<>();
