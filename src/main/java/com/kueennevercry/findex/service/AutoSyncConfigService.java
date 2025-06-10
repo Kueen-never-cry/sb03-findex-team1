@@ -2,6 +2,7 @@ package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.dto.response.AutoSyncConfigDto;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.AutoSyncConfigMapper;
@@ -32,5 +33,18 @@ public class AutoSyncConfigService {
         index.getIndexClassification()
     );
     return autoSyncConfigMapper.toDto(config, indexInfoDto);
+  }
+
+  @Transactional(readOnly = true)
+  public CursorPageResponse<AutoSyncConfigDto> getAutoSyncConfigs(
+      Long indexInfoId,
+      Boolean enabled,
+      String cursor,
+      Long idAfter,
+      String sortField,
+      String sortDirection,
+      int size
+  ) {
+    return null;
   }
 }

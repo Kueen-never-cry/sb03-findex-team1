@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, Long> {
+public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, Long>,
+    AutoSyncConfigCustomRepository {
 
   boolean existsByIndexInfo(IndexInfo indexInfo);
 
