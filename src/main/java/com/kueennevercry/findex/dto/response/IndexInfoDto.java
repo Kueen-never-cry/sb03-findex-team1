@@ -1,43 +1,23 @@
 package com.kueennevercry.findex.dto.response;
 
-import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class IndexInfoDto {
+/**
+ * 지수 정보 DTO 데이터 전달 목적으로만 사용
+ */
+public record IndexInfoDto(
+    Long id,
+    String indexClassification,
+    String indexName,
+    Integer employedItemsCount,
+    LocalDate basePointInTime,
+    BigDecimal baseIndex,
+    SourceType sourceType,
+    Boolean favorite,
+    Instant createdAt,
+    Instant updatedAt) {
 
-  private Long id;
-  private String indexClassification;
-  private String indexName;
-  private Integer employedItemsCount;
-  private LocalDate basePointInTime;
-  private Float baseIndex;
-  private SourceType sourceType;
-  private Boolean favorite;
-  private LocalDateTime createdAt;
-  private LocalDateTime updatedAt;
-
-  public static IndexInfoDto from(IndexInfo indexInfo) {
-    return IndexInfoDto.builder()
-        .id(indexInfo.getId())
-        .indexClassification(indexInfo.getIndexClassification())
-        .indexName(indexInfo.getIndexName())
-        .employedItemsCount(indexInfo.getEmployedItemsCount())
-        .basePointInTime(indexInfo.getBasePointInTime())
-        .baseIndex(indexInfo.getBaseIndex())
-        .sourceType(indexInfo.getSourceType())
-        .favorite(indexInfo.getFavorite())
-        .createdAt(indexInfo.getCreatedAt())
-        .updatedAt(indexInfo.getUpdatedAt())
-        .build();
-  }
 }
