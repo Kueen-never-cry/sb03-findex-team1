@@ -41,7 +41,8 @@ public class AutoSyncConfigController {
       @RequestParam(defaultValue = "asc") String sortDirection,
       @RequestParam(defaultValue = "10") int size
   ) {
-    // TODO: Service 작업 예정
-    return null;
+    return autoSyncConfigService.getAutoSyncConfigs(
+        indexInfoId, enabled, cursor, idAfter, sortFild, sortDirection, size
+    );
   }
 }
