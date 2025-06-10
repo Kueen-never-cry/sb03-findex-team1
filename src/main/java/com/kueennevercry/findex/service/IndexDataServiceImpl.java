@@ -110,7 +110,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public IndexData update(Long id, IndexDataUpdateDto request) {
+  public IndexData update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findById(id).orElseThrow(NoSuchElementException::new);
 
     indexData.update(
@@ -175,10 +175,11 @@ public class IndexDataServiceImpl implements IndexDataService {
     );
 
     // 정렬 + 랭킹 부여
-List<RankedIndexPerformanceDto> sorted = raw.stream()
-    .sorted(Comparator.comparing((RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
-    .limit(limit)
-    .toList();
+    List<RankedIndexPerformanceDto> sorted = raw.stream()
+        .sorted(Comparator.comparing(
+            (RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
+        .limit(limit)
+        .toList();
 
     return IntStream.range(0, sorted.size())
         .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
@@ -186,16 +187,16 @@ List<RankedIndexPerformanceDto> sorted = raw.stream()
   }
 
   private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {
-      List<ChartDataPoint> result = new ArrayList<>();
-      for (int i = 0; i <= points.size() - windowSize; i++) {
-          double sum = 0.0;
-          for (int j = 0; j < windowSize; j++) {
-              sum += points.get(i + j).value();
-          }
-          double average = sum / windowSize;
-          result.add(new ChartDataPoint(points.get(i).date(), average));
+    List<ChartDataPoint> result = new ArrayList<>();
+    for (int i = 0; i <= points.size() - windowSize; i++) {
+      double sum = 0.0;
+      for (int j = 0; j < windowSize; j++) {
+        sum += points.get(i + j).value();
       }
-      return result;
+      double average = sum / windowSize;
+      result.add(new ChartDataPoint(points.get(i).date(), average));
+    }
+    return result;
   }
 
   private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {

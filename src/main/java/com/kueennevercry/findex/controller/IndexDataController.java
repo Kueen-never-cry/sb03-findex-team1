@@ -1,10 +1,10 @@
 package com.kueennevercry.findex.controller;
 
-import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
-import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
-import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
+import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
@@ -47,7 +47,7 @@ public class IndexDataController {
 
   @PostMapping
   public ResponseEntity<IndexData> create(
-      @RequestBody IndexDataCreateDto dto
+      @RequestBody IndexDataCreateRequest dto
   ) {
     IndexData indexData = indexDataService.create(dto);
 
@@ -57,7 +57,7 @@ public class IndexDataController {
   @PatchMapping("{id}")
   public ResponseEntity<IndexData> update(
       @PathVariable Long id,
-      @RequestBody IndexDataUpdateDto dto
+      @RequestBody IndexDataUpdateRequest dto
   ) {
     IndexData indexData = indexDataService.update(id, dto);
 
