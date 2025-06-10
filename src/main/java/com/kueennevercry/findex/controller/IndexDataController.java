@@ -8,7 +8,6 @@ import com.kueennevercry.findex.dto.response.IndexChartResponse;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
-import com.kueennevercry.findex.service.IndexDataServiceImpl;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -32,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class IndexDataController {
 
   private final IndexDataService indexDataService;
-  private final IndexDataServiceImpl indexDataServiceImpl;
 
   //----------- 지수 데이터 --------------//
   @GetMapping("/{indexInfoId}")
@@ -83,11 +81,11 @@ public class IndexDataController {
   }
 
   //----------- 대시보드 --------------//
-  @GetMapping("/favorite")
+  @GetMapping("/performance/favorite")
   public List<IndexPerformanceDto> getFavoriteIndexPerformances(
       @RequestParam(defaultValue = "DAILY") PeriodType periodType
   ) {
-    return indexDataServiceImpl.getFavoritePerformances(periodType);
+    return indexDataService.getFavoritePerformances(periodType);
   }
 
   @GetMapping("/{id}/chart")

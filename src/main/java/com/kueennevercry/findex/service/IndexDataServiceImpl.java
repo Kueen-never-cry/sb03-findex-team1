@@ -176,17 +176,17 @@ public class IndexDataServiceImpl implements IndexDataService {
     List<IndexPerformanceDto> results = new ArrayList<>();
 
     for (IndexInfo index : favorites) {
-      Optional<IndexData> currentOpt = indexDataRepository
+      Optional<IndexData> currentData = indexDataRepository
           .findByIndexInfoIdAndBaseDate(index.getId(), baseDate);
-      Optional<IndexData> previousOpt = indexDataRepository
+      Optional<IndexData> previousData = indexDataRepository
           .findClosestBeforeOrEqual(index.getId(), compareDate);
 
-      if (currentOpt.isEmpty() || previousOpt.isEmpty()) {
+      if (currentData.isEmpty() || previousData.isEmpty()) {
         continue;
       }
 
-      IndexData current = currentOpt.get();
-      IndexData previous = previousOpt.get();
+      IndexData current = currentData.get();
+      IndexData previous = previousData.get();
 
       BigDecimal currentPrice = current.getClosingPrice();
       BigDecimal beforePrice = previous.getClosingPrice();
