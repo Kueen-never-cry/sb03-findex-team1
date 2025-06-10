@@ -1,7 +1,7 @@
 package com.kueennevercry.findex.controller;
 
-import com.kueennevercry.findex.dto.AutoSyncConfigDto;
 import com.kueennevercry.findex.dto.request.AutoSyncConfigUpdateRequest;
+import com.kueennevercry.findex.dto.response.AutoSyncConfigDto;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.service.AutoSyncConfigService;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +40,8 @@ public class AutoSyncConfigController {
       @RequestParam(defaultValue = "indexInfo.indexName") String sortFild,
       @RequestParam(defaultValue = "asc") String sortDirection,
       @RequestParam(defaultValue = "10") int size
-  );
+  ) {
+    // TODO: Service 작업 예정
+    return null;
+  }
 }

@@ -1,6 +1,5 @@
-package com.kueennevercry.findex.config;
+package com.kueennevercry.findex.entity;
 
-import com.kueennevercry.findex.entity.IndexInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -36,7 +36,7 @@ public class AutoSyncConfig {
   private boolean enabled = false;
 
   @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt = Instant.now();
+  private Instant createdAt;
 
   @Column(name = "updated_at")
   private Instant updatedAt;
@@ -47,9 +47,14 @@ public class AutoSyncConfig {
     this.createdAt = Instant.now();
   }
 
-  @PreUpdate
-  public void preUpdate() {
-    this.updatedAt = Instant.now();
+  @PrePersist // 데이터 생성 시 자동으로 실행
+  protected void onCreate() {
+    createdAt = Instant.now();
+  }
+
+  @PreUpdate // 데이터 수정 시 자동으로 실행
+  protected void onUpdate() {
+    updatedAt = Instant.now();
   }
 
   public Long getIndexInfoId() {
