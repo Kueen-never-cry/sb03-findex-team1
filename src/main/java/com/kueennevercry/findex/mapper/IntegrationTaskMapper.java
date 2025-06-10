@@ -10,6 +10,4 @@ public interface IntegrationTaskMapper {
 
   @Mapping(target = "indexInfoId", source = "integrationTask.indexInfo.id")
   SyncJobDto toSyncJobDto(IntegrationTask integrationTask);
-
-
 }
