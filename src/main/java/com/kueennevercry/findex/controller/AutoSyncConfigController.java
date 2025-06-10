@@ -31,13 +31,13 @@ public class AutoSyncConfigController {
     return ResponseEntity.status(HttpStatus.OK).body(updated);
   }
 
-  @GetMapping("/api/auto-sync-configs")
+  @GetMapping
   public CursorPageResponse<AutoSyncConfigDto> getAutoSyncConfigs(
       @RequestParam(required = false) Long indexInfoId,
       @RequestParam(required = false) Boolean enabled,
       @RequestParam(required = false) String cursor,
       @RequestParam(required = false) Long idAfter,
-      @RequestParam(defaultValue = "indexInfo.indexName") String sortFild,
+      @RequestParam(defaultValue = "id") String sortFild,
       @RequestParam(defaultValue = "asc") String sortDirection,
       @RequestParam(defaultValue = "10") int size
   ) {

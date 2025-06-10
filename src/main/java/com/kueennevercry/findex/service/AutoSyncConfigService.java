@@ -45,8 +45,10 @@ public class AutoSyncConfigService {
       String sortDirection,
       int size
   ) {
+    Long nextIdAfter = idAfter != null ? idAfter : (cursor != null ? Long.parseLong(cursor) : null);
+
     return autoSyncConfigRepository.findAllByParameters(
-        indexInfoId, enabled, idAfter, sortField, sortDirection, size
+        indexInfoId, enabled, nextIdAfter, sortField, sortDirection, size
     );
   }
 }

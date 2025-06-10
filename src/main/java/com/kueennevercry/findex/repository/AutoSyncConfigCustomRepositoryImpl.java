@@ -42,6 +42,8 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
 
     if ("enabled".equals(sortField)) {
       query.orderBy("desc".equals(sortDirection) ? config.enabled.desc() : config.enabled.asc());
+    } else if ("id".equals(sortField)) {
+      query.orderBy("desc".equals(sortDirection) ? config.id.desc() : config.id.asc());
     } else {
       query.orderBy("desc".equals(sortDirection) ? index.indexName.desc() : index.indexName.asc());
     }
