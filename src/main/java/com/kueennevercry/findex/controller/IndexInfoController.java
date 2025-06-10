@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/index-infos")
 @RequiredArgsConstructor
-public class
-IndexInfoController {
+public class IndexInfoController {
 
   private final IndexInfoService indexInfoService;
 
