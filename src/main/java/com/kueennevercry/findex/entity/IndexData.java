@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,8 +28,6 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @Table(name = "index_data")
-@AllArgsConstructor
-@Builder
 public class IndexData {
 
   @Id
@@ -162,6 +159,7 @@ public class IndexData {
 
     if (anyValueUpdated) {
       this.sourceType = SourceType.USER;
+      this.updatedAt = Instant.now();
     }
   }
 }

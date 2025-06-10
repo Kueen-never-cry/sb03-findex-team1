@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 public interface IndexDataMapper {
 
-    @Mapping(source = "indexInfo.id", target = "indexInfoId")
-    IndexDataDto toDto(IndexData indexData);
+  @Mapping(source = "indexInfo.id", target = "indexInfoId")
+  IndexDataDto toDto(IndexData indexData);
 }

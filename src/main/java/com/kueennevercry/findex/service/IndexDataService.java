@@ -1,10 +1,10 @@
 package com.kueennevercry.findex.service;
 
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
-import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import java.io.IOException;
@@ -22,8 +22,6 @@ public interface IndexDataService {
 
   // 지수 데이터
   IndexData create(IndexDataCreateRequest request);
-
-  List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId);
 
   List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
       String sortBy, String sortDirection);
