@@ -2,8 +2,8 @@ package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
-import com.kueennevercry.findex.dto.request.IndexDataCreateDto;
-import com.kueennevercry.findex.dto.request.IndexDataUpdateDto;
+import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
@@ -40,7 +40,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   //------------지수 데이터-----------//
   @Override
   public IndexData create(
-      IndexDataCreateDto request
+      IndexDataCreateRequest request
   ) {
     IndexInfo indexInfo = request.indexInfo();
     LocalDate baseDate = request.baseDate();
@@ -110,7 +110,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public IndexData update(Long id, IndexDataUpdateDto request) {
+  public IndexData update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findById(id).orElseThrow(NoSuchElementException::new);
 
     indexData.update(
@@ -175,10 +175,11 @@ public class IndexDataServiceImpl implements IndexDataService {
     );
 
     // 정렬 + 랭킹 부여
-List<RankedIndexPerformanceDto> sorted = raw.stream()
-    .sorted(Comparator.comparing((RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
-    .limit(limit)
-    .toList();
+    List<RankedIndexPerformanceDto> sorted = raw.stream()
+        .sorted(Comparator.comparing(
+            (RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
+        .limit(limit)
+        .toList();
 
     return IntStream.range(0, sorted.size())
         .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
@@ -186,16 +187,16 @@ List<RankedIndexPerformanceDto> sorted = raw.stream()
   }
 
   private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {
-      List<ChartDataPoint> result = new ArrayList<>();
-      for (int i = 0; i <= points.size() - windowSize; i++) {
-          double sum = 0.0;
-          for (int j = 0; j < windowSize; j++) {
-              sum += points.get(i + j).value();
-          }
-          double average = sum / windowSize;
-          result.add(new ChartDataPoint(points.get(i).date(), average));
+    List<ChartDataPoint> result = new ArrayList<>();
+    for (int i = 0; i <= points.size() - windowSize; i++) {
+      double sum = 0.0;
+      for (int j = 0; j < windowSize; j++) {
+        sum += points.get(i + j).value();
       }
-      return result;
+      double average = sum / windowSize;
+      result.add(new ChartDataPoint(points.get(i).date(), average));
+    }
+    return result;
   }
 
   private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {

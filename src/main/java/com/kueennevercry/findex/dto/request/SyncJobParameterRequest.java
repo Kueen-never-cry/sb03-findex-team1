@@ -8,10 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class SyncJobParameterRequest {
@@ -29,27 +31,10 @@ public class SyncJobParameterRequest {
   private LocalDateTime jobTimeTo;
   private IntegrationResultType status;
   private Long idAfter;
-  private Integer cursor;
-  private String sortField; // TODO : 이거 어떤 타입 있는지 알아봐야함 ex) jobTime
-  private String sortDirection; // desc
+  private String cursor; // Case 1(jobTime) 2025-06-09T09:25:16.890996 , Case 2(targetDate) 2023-01-03
+  private String sortField; //  ex) jobTime(작업일시) , targetDate(대상날짜)
+  private String sortDirection; // asc, desc
   private Integer size;
 
-  @Override
-  public String toString() {
-    return "SyncJobParameterRequest{" +
-        "jobType='" + jobType + '\'' +
-        ", indexInfoId=" + indexInfoId +
-        ", baseDateFrom='" + baseDateFrom + '\'' +
-        ", baseDateTo='" + baseDateTo + '\'' +
-        ", worker='" + worker + '\'' +
-        ", jobTimeFrom='" + jobTimeFrom + '\'' +
-        ", jobTimeTo='" + jobTimeTo + '\'' +
-        ", status='" + status + '\'' +
-        ", idAfter=" + idAfter +
-        ", cursor=" + cursor +
-        ", sortField='" + sortField + '\'' +
-        ", sortDirection='" + sortDirection + '\'' +
-        ", size=" + size +
-        '}';
-  }
+
 }

@@ -5,7 +5,7 @@ import com.kueennevercry.findex.entity.SourceType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record IndexDataCreateDto(
+public record IndexDataCreateRequest(
     IndexInfo indexInfo,
     LocalDate baseDate,
     SourceType sourceType,
