@@ -11,6 +11,7 @@ import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class IndexInfoService {
    */
   public IndexInfoDto findById(Long id) {
     IndexInfo indexInfo = indexInfoRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("지수 정보를 찾을 수 없습니다. ID: " + id));
+        .orElseThrow(() -> new EntityNotFoundException("지수 정보를 찾을 수 없습니다. ID: " + id));
     return indexInfoMapper.toDto(indexInfo);
   }
 
@@ -68,7 +69,7 @@ public class IndexInfoService {
   public IndexInfoDto update(Long id, IndexInfoUpdateRequest request) {
     // 1. 기존 지수 정보 조회 (영속성 컨텍스트에 엔티티 저장 + 스냅샷 생성)
     IndexInfo indexInfo = indexInfoRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("지수 정보를 찾을 수 없습니다. ID: " + id));
+        .orElseThrow(() -> new EntityNotFoundException("지수 정보를 찾을 수 없습니다. ID: " + id));
 
     // 2. 수정 가능한 필드만 업데이트 (null이 아닌 경우에만)
     // 각 setter 호출 시 JPA가 변경사항을 감지함
@@ -105,7 +106,7 @@ public class IndexInfoService {
   public void delete(Long id) {
     // 1. 지수 정보 존재 여부 확인
     if (!indexInfoRepository.existsById(id)) {
-      throw new RuntimeException("삭제할 지수 정보를 찾을 수 없습니다. ID: " + id);
+      throw new EntityNotFoundException("삭제할 지수 정보를 찾을 수 없습니다. ID: " + id);
     }
 
     // 2. 연관된 지수 데이터 삭제 (IndexData)
