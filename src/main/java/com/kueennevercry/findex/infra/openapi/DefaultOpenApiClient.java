@@ -3,7 +3,7 @@ package com.kueennevercry.findex.infra.openapi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kueennevercry.findex.config.OpenApiProperties;
-import com.kueennevercry.findex.dto.response.IndexDataResponse;
+import com.kueennevercry.findex.dto.response.IndexDataDto;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,7 +23,7 @@ public class DefaultOpenApiClient implements OpenApiClient {
   private final ObjectMapper objectMapper;
 
   @Override
-  public List<IndexDataResponse> fetchIndexData(String indexCode, String endpoint, LocalDate from,
+  public List<IndexDataDto> fetchIndexData(String indexCode, String endpoint, LocalDate from,
       LocalDate to)
       throws IOException, URISyntaxException {
     URI url = buildUrl(indexCode, endpoint, from, to);
@@ -32,11 +32,11 @@ public class DefaultOpenApiClient implements OpenApiClient {
     return convert(response.getBody());
   }
 
-  private List<IndexDataResponse> convert(String json) throws IOException {
+  private List<IndexDataDto> convert(String json) throws IOException {
     JsonNode root = objectMapper.readTree(json);
     JsonNode items = root.path("response").path("body").path("items").path("item");
 
-    return objectMapper.readerForListOf(IndexDataResponse.class).readValue(items);
+    return objectMapper.readerForListOf(IndexDataDto.class).readValue(items);
   }
 
   private URI buildUrl(String indexCode, String endpoint, LocalDate from, LocalDate to)

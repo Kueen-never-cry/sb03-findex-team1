@@ -8,14 +8,18 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "integration_tasks")
@@ -46,5 +50,9 @@ public class IntegrationTask {
   @CreatedDate
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
+
+  @ManyToOne
+  @JoinColumn(name = "index_info_id", nullable = false)
+  private IndexInfo indexInfo;
 
 }

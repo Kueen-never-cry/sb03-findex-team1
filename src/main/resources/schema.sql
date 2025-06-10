@@ -4,6 +4,9 @@ CREATE SCHEMA IF NOT EXISTS findex AUTHORIZATION findex;
 -- findex 유저 기본 접근 스키마 설정
 ALTER ROLE findex SET search_path TO findex;
 
+SELECT * FROM INDEX_INFO;
+SELECT * FROM INDEX_DATA;
+
 -- 테이블 삭제
 DROP TABLE IF EXISTS "integration_tasks" CASCADE;
 DROP TABLE IF EXISTS "index_data" CASCADE;
