@@ -1,6 +1,6 @@
 package com.kueennevercry.findex.mapper;
 
-import com.kueennevercry.findex.dto.IndexInfoDto;
+import com.kueennevercry.findex.dto.response.IndexInfoDto;
 import com.kueennevercry.findex.entity.IndexInfo;
 import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 public interface IndexInfoMapper {
 
-    IndexInfoDto toDto(IndexInfo indexData);
+  IndexInfoDto toDto(IndexInfo indexData);
 
-    IndexInfo toEntity(IndexInfoDto indexInfoDto);
+  IndexInfo toEntity(IndexInfoDto indexInfoDto);
 
 }
