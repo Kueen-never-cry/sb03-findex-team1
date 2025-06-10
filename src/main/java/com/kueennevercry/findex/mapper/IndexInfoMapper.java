@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel = "spring")
 public interface IndexInfoMapper {
 
-  IndexInfoDto toDto(IndexInfo indexData);
+  IndexInfoDto toDto(IndexInfo indexInfo);
 
   IndexInfo toEntity(IndexInfoDto indexInfoDto);
 
