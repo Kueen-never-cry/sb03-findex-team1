@@ -13,6 +13,7 @@ import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.kueennevercry.findex.repository.IndexDataRepository;
+import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ public class IndexDataServiceImpl implements IndexDataService {
   private final OpenApiClient openApiClient;
   private String STOCK_INDEX_ENDPOINT = "/getStockMarketIndex";
 
+  private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
   private final IndexDataMapper indexDataMapper;
 
@@ -42,7 +44,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   public IndexData create(
       IndexDataCreateRequest request
   ) {
-    IndexInfo indexInfo = request.indexInfo();
+    IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
+        .orElseThrow(() -> new IllegalArgumentException("Index Info not found"));
     LocalDate baseDate = request.baseDate();
     if (indexDataRepository.existsByIndexInfoId(indexInfo.getId())
         && indexDataRepository.existsByBaseDate(baseDate)) {
@@ -70,28 +73,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByIndexInfoId(Long indexInfoId) {
-
-    if (indexInfoId == null) {
-      indexInfoId = 3L;
-    }
-
-    return indexDataRepository.findAllByIndexInfo_Id(indexInfoId).stream()
-        .map(indexDataMapper::toDto)
-        .toList();
-  }
-
-  @Override
-  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId,
-      LocalDate from, LocalDate to,
+  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
       String sortBy, String sortDirection) {
-
-    if (from == null) {
-      from = LocalDate.of(1900, 1, 1);
-    }
-    if (to == null) {
-      to = LocalDate.now();
-    }
 
     Sort.Direction direction;
 
@@ -134,32 +117,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   @Override
   public IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
       throws IOException, URISyntaxException {
-    // 임의의 값으로 테스트
-    String indexCode = "KRX 300 소재";
-    LocalDate endDate = LocalDate.now();
-    LocalDate startDate = endDate.minusMonths(6);
-
-    List<IndexDataDto> rawData = openApiClient.fetchIndexData(indexCode, STOCK_INDEX_ENDPOINT,
-        startDate,
-        endDate);
-
-    List<ChartDataPoint> dataPoints = rawData.stream()
-        .map(data -> new ChartDataPoint(data.baseDate(), data.closingPrice()))
-        .sorted(Comparator.comparing(ChartDataPoint::date).reversed())
-        .toList();
-
-    List<ChartDataPoint> ma5 = calculateMovingAverage(dataPoints, 5);
-    List<ChartDataPoint> ma20 = calculateMovingAverage(dataPoints, 20);
-
-    return new IndexChartDto(
-        indexInfoId,
-        "KRX 시리즈",
-        "KRX 300 소재",
-        periodType,
-        dataPoints,
-        ma5,
-        ma20
-    );
+    // FIXME : develop 브랜치 안정화 후 재구님이 추가 예정
+    return null;
   }
 
   @Override

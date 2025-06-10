@@ -30,6 +30,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+/src/main/resources/db.yaml
 
 ### STS ###
 .apt_generated
@@ -45,6 +46,7 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea
+.idea/*
 *.iws
 *.iml
 *.ipr

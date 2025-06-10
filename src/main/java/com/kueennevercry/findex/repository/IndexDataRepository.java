@@ -14,8 +14,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
-  List<IndexData> findAllByIndexInfo_Id(Long indexInfoId);
-
   List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from,
       LocalDate to, Sort sort);
 
@@ -49,9 +47,9 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
         AND (:indexInfoId IS NULL OR info.id = :indexInfoId)
       """)
   List<RankedIndexPerformanceDto> findRankedPerformances(
-      @Param("baseDate") LocalDate baseDate,
-      @Param("beforeBaseDate") LocalDate beforeBaseDate,
-      @Param("indexInfoId") Long indexInfoId
+        @Param("baseDate") LocalDate baseDate,
+        @Param("beforeBaseDate") LocalDate beforeBaseDate,
+        @Param("indexInfoId") Long indexInfoId
   );
 
 

@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, Long> {
+
   boolean existsByIndexInfo(IndexInfo indexInfo);
+
   Optional<AutoSyncConfig> findByIndexInfo(IndexInfo indexInfo);
 
   @Query("SELECT c FROM AutoSyncConfig c JOIN FETCH c.indexInfo WHERE c.id = :id")

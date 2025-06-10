@@ -1,14 +1,11 @@
 package com.kueennevercry.findex.dto.request;
 
-import com.kueennevercry.findex.entity.IndexInfo;
-import com.kueennevercry.findex.entity.SourceType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record IndexDataCreateRequest(
-    IndexInfo indexInfo,
+    Long indexInfoId,
     LocalDate baseDate,
-    SourceType sourceType,
     BigDecimal marketPrice,
     BigDecimal closingPrice,
     BigDecimal highPrice,
