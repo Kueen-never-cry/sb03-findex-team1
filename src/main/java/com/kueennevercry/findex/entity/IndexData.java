@@ -159,7 +159,6 @@ public class IndexData {
 
     if (anyValueUpdated) {
       this.sourceType = SourceType.USER;
-      this.updatedAt = Instant.now();
     }
   }
 }

@@ -19,7 +19,7 @@ public interface IndexDataService {
   IndexData create(IndexDataCreateRequest request);
 
   List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
-      String sortBy, String sortDirection);
+      String sortBy, String sortDirection, int size);
 
   IndexData update(Long id, IndexDataUpdateRequest request);
 
