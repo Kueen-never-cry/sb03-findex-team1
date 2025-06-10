@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,10 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 @Table(name = "index_data")
+@AllArgsConstructor
+@Builder
 public class IndexData {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -76,9 +80,11 @@ public class IndexData {
   private Instant updatedAt;
 
   @Builder
-  public IndexData(IndexInfo indexInfo, LocalDate baseDate, SourceType sourceType, BigDecimal marketPrice,
-                   BigDecimal closingPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
-                   Long tradingQuantity, Long tradingPrice, Long marketTotalAmount) {
+  public IndexData(IndexInfo indexInfo, LocalDate baseDate, SourceType sourceType,
+      BigDecimal marketPrice,
+      BigDecimal closingPrice, BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus,
+      BigDecimal fluctuationRate,
+      Long tradingQuantity, Long tradingPrice, Long marketTotalAmount) {
 
     this.indexInfo = indexInfo;
     this.baseDate = baseDate;
@@ -97,8 +103,8 @@ public class IndexData {
   }
 
   public void update(BigDecimal marketPrice, BigDecimal closingPrice,
-                     BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
-                     Long tradingQuantity) {
+      BigDecimal highPrice, BigDecimal lowPrice, BigDecimal versus, BigDecimal fluctuationRate,
+      Long tradingQuantity) {
 
     boolean anyValueUpdated = false;
 
