@@ -1,12 +1,10 @@
 package com.kueennevercry.findex.dto;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record ChartPoint(
+public record ChartDataPoint(
     LocalDate date,
-    BigDecimal value
+    Double value
 ) {
 
 }
-

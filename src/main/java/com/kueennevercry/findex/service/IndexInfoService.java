@@ -1,7 +1,7 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.IndexInfoDto;
 import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoDto;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
 import lombok.RequiredArgsConstructor;
