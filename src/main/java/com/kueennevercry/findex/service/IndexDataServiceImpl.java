@@ -27,6 +27,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +80,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   @Override
   public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
-      String sortBy, String sortDirection) {
+      String sortField, String sortDirection, int size) {
 
     Sort.Direction direction;
 
@@ -88,9 +90,12 @@ public class IndexDataServiceImpl implements IndexDataService {
       direction = Sort.Direction.DESC;
     }
 
-    Sort sort = Sort.by(direction, sortBy);
+    Sort sort = Sort.by(direction, sortField);
 
-    return indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(indexInfoId, from, to, sort)
+    Pageable pageable = PageRequest.of(0, size, sort);
+
+    return indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(indexInfoId, from, to, sort,
+            pageable)
         .stream()
         .map(indexDataMapper::toDto)
         .toList();

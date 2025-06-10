@@ -34,16 +34,30 @@ public class IndexDataController {
   private final IndexDataService indexDataService;
 
   //----------- 지수 데이터 --------------//
-  @GetMapping("/{indexInfoId}")
+  @GetMapping
   public ResponseEntity<List<IndexDataDto>> findByIndexInfoIdAndBaseDateRange(
-      @PathVariable Long indexInfoId,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(defaultValue = "baseDate") String sortBy,
-      @RequestParam(defaultValue = "desc") String sortDirection
+      @RequestParam(required = false) Long indexInfoId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+      @RequestParam(required = false) Long idAfter,
+      @RequestParam(required = false) String cursor,
+      @RequestParam(defaultValue = "baseDate") String sortField,
+      @RequestParam(defaultValue = "desc") String sortDirection,
+      @RequestParam(defaultValue = "10") int size
   ) {
+    if (indexInfoId == null) {
+      indexInfoId = 3L;
+    }
+    if (startDate == null) {
+      startDate = LocalDate.of(1900, 1, 1);
+    }
+    if (endDate == null) {
+      endDate = LocalDate.now();
+    }
+
     return ResponseEntity.ok(
-        indexDataService.findAllByBaseDateBetween(indexInfoId, from, to, sortBy, sortDirection));
+        indexDataService.findAllByBaseDateBetween(indexInfoId, startDate, endDate, sortField,
+            sortDirection, size));
   }
 
   @PostMapping

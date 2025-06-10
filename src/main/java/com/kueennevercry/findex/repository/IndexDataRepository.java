@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
   List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from,
-      LocalDate to, Sort sort);
+      LocalDate to, Sort sort, Pageable pageable);
 
   boolean existsByIndexInfoId(Long indexInfoId);
 
