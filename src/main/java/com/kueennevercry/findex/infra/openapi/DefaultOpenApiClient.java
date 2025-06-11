@@ -3,6 +3,8 @@ package com.kueennevercry.findex.infra.openapi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kueennevercry.findex.config.OpenApiProperties;
+import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -47,6 +49,7 @@ public class DefaultOpenApiClient implements OpenApiClient {
         .queryParam("numOfRows", indexInfoApiRequest.getNumOfRows())
         .queryParam("beginBasDt", indexInfoApiRequest.getBeginBasDt())
         .queryParam("endBasDt", indexInfoApiRequest.getEndBasDt())
+        .queryParam("basDt", indexInfoApiRequest.getBasDt())
         .build(true)
         .toUri();
   }
