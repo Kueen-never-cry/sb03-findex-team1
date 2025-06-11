@@ -4,6 +4,7 @@ import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
@@ -77,7 +78,9 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
+  public CursorPageResponse<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from,
+      LocalDate to,
+      Long idAfter, String cursor,
       String sortField, String sortDirection, int size) {
 
     Sort.Direction direction;
@@ -92,11 +95,23 @@ public class IndexDataServiceImpl implements IndexDataService {
 
     Pageable pageable = PageRequest.of(0, size, sort);
 
-    return indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(indexInfoId, from, to,
+    List<IndexDataDto> dto = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
+            indexInfoId, from, to,
             pageable)
         .stream()
         .map(indexDataMapper::toDto)
         .toList();
+
+    CursorPageResponse<IndexDataDto> cursorDto = indexDataMapper.toCursorDto(
+        dto,
+        cursor,
+        idAfter,
+        size,
+        (long) dto.size(),
+        dto.size() > size
+    );
+
+    return cursorDto;
   }
 
   @Override
