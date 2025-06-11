@@ -1,11 +1,11 @@
 spring:
   application:
     name: findex
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/findex
-#    username: postgres
-#    password: 1234
-#    driver-class-name: org.postgresql.Driver
+  #  datasource:
+  #    url: jdbc:postgresql://localhost:5432/findex
+  #    username: postgres
+  #    password: 1234
+  #    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -25,3 +25,7 @@ spring:
 openapi:
   base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
   api-key: ${OPEN_API_KEY}
+  api-encoded-key: ${OPEN_API_ENCODED_KEY}
+  scheme: "https"
+  host: "apis.data.go.kr"
+  path: "/1160100/service/GetMarketIndexInfoService/getStockMarketIndex"
