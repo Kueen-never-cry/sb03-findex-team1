@@ -9,8 +9,6 @@ import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +75,7 @@ public class IndexDataController {
   public ResponseEntity<IndexChartDto> getChart(
       @PathVariable Long id,
       @RequestParam PeriodType periodType
-  ) throws IOException, URISyntaxException {
+  ) {
     IndexChartDto response = indexDataService.getChart(id, periodType);
     return ResponseEntity.ok(response);
   }
@@ -85,7 +83,7 @@ public class IndexDataController {
   @GetMapping("/performance/rank")
   public ResponseEntity<List<RankedIndexPerformanceDto>> getRank(
       @RequestParam(required = false) Long indexInfoId,
-      @RequestParam(defaultValue = "DAILY") String periodType,
+      @RequestParam(defaultValue = "DAILY") PeriodType periodType,
       @RequestParam(defaultValue = "10") int limit
   ) {
     return ResponseEntity.ok(
