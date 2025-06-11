@@ -82,6 +82,8 @@ COMMENT ON COLUMN "integration_tasks"."job_type" IS 'ENUM("INDEX_INFO", "INDEX_D
 COMMENT ON COLUMN "integration_tasks"."worker" IS 'IP 또는 SYSTEM';
 COMMENT ON COLUMN "integration_tasks"."result" IS 'ENUM("SUCCESS", "FAILED")';
 
+alter table integration_tasks
+    alter column index_info_id drop not null;
 
 --- 더미데이터 INSERT 구문
 INSERT INTO index_info (id, index_classification, index_name, employed_items_count,
