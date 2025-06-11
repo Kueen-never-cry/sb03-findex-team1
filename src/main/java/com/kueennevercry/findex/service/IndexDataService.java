@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 
 public interface IndexDataService {
 
@@ -33,4 +34,7 @@ public interface IndexDataService {
       int limit);
 
   List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);
+
+  List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
+      LocalDate endDate, Sort sort);
 }
