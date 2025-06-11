@@ -8,6 +8,7 @@ import com.kueennevercry.findex.entity.IntegrationJobType;
 import com.kueennevercry.findex.entity.IntegrationResultType;
 import com.kueennevercry.findex.entity.IntegrationTask;
 import com.kueennevercry.findex.entity.SourceType;
+import com.kueennevercry.findex.infra.openapi.IndexInfoApiRequest;
 import com.kueennevercry.findex.infra.openapi.IndexInfoApiResponse;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IntegrationTaskMapper;
@@ -36,8 +37,11 @@ public class SyncJobService {
   }
 
   public List<SyncJobDto> syncIndexInfo() {
+
+    IndexInfoApiRequest apiRequestParams = IndexInfoApiRequest.builder().pageNo(1).numOfRows(5)
+        .build();
     // 1. 순수 openApi에서 가져온  데이터
-    List<IndexInfoApiResponse> indexDataList = openApiClient.fetchAllIndexData();
+    List<IndexInfoApiResponse> indexDataList = openApiClient.fetchAllIndexData(apiRequestParams);
 
     //2. indexInfo에 이미 데이터 있으면 바로 integrationTask 데이터 삽입, 없으면 indexInfo 데이터 생성 후 integrationTask 데이터 삽입
     List<IntegrationTask> integrationTaskList = new ArrayList<>();
