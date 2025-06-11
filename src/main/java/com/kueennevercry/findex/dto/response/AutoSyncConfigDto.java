@@ -1,4 +1,4 @@
-package com.kueennevercry.findex.dto;
+package com.kueennevercry.findex.dto.response;
 
 public record AutoSyncConfigDto(
     Long id,
