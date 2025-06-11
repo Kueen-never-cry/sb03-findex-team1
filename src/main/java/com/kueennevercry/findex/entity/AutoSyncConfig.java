@@ -36,10 +36,16 @@ public class AutoSyncConfig {
   private boolean enabled = false;
 
   @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt = Instant.now();
+  private Instant createdAt;
 
   @Column(name = "updated_at")
   private Instant updatedAt;
+
+  public AutoSyncConfig(IndexInfo indexInfo) {
+    this.indexInfo = indexInfo;
+    this.enabled = false;
+    this.createdAt = Instant.now();
+  }
 
   @PrePersist // 데이터 생성 시 자동으로 실행
   protected void onCreate() {
@@ -49,12 +55,6 @@ public class AutoSyncConfig {
   @PreUpdate // 데이터 수정 시 자동으로 실행
   protected void onUpdate() {
     updatedAt = Instant.now();
-  }
-
-  public AutoSyncConfig(IndexInfo indexInfo) {
-    this.indexInfo = indexInfo;
-    this.enabled = false;
-    this.createdAt = Instant.now();
   }
 
   public Long getIndexInfoId() {
