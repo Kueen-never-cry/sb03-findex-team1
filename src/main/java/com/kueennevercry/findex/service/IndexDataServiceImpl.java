@@ -24,10 +24,12 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -154,7 +156,6 @@ public class IndexDataServiceImpl implements IndexDataService {
         baseDate, beforeBaseDate, indexInfoId
     );
 
-    // 정렬 + 랭킹 부여
     List<RankedIndexPerformanceDto> sorted = raw.stream()
         .sorted(Comparator.comparing(
             (RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
@@ -170,10 +171,8 @@ public class IndexDataServiceImpl implements IndexDataService {
   public List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType) {
     List<IndexInfo> favorites = indexInfoRepository.findAllByFavoriteTrue();
 
-    LocalDate baseDate = indexDataRepository.findLatestBaseDateAcrossAll();
-    if (baseDate == null) {
-      return List.of();
-    }
+    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
+        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
 
     LocalDate compareDate = calculateStartDate(baseDate, periodType);
 
@@ -211,6 +210,52 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     return results;
+  }
+
+  @Override
+  public List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
+      LocalDate endDate, Sort sort) {
+    LocalDate now = LocalDate.now();
+
+    if (endDate == null) {
+      endDate = now;
+    }
+
+    if (startDate == null) {
+      startDate = indexDataRepository.findMinBaseDate(indexInfoId)
+          .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    }
+
+    List<IndexData> dataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
+        indexInfoId, startDate, endDate, sort);
+
+    if (dataList.size() > 20_000) {
+      log.warn("지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다.", dataList.size());
+    }
+
+    List<String[]> rows = new ArrayList<>();
+
+    rows.add(new String[]{
+        "기준일자", "시가", "종가", "고가", "저가",
+        "전일대비등락", "등락률", "거래량", "거래대금", "시가총액"
+    });
+
+    for (IndexData data : dataList) {
+      rows.add(new String[]{
+          data.getBaseDate().toString(),
+          String.valueOf(data.getMarketPrice()),
+          String.valueOf(data.getClosingPrice()),
+          String.valueOf(data.getHighPrice()),
+          String.valueOf(data.getLowPrice()),
+          String.valueOf(data.getVersus()),
+          String.valueOf(data.getFluctuationRate()),
+          String.valueOf(data.getTradingQuantity()),
+          String.valueOf(data.getTradingPrice()),
+          String.valueOf(data.getMarketTotalAmount())
+      });
+    }
+
+    return rows;
   }
 
   private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {

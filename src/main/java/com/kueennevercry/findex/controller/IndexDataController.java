@@ -9,9 +9,18 @@ import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.service.IndexDataService;
+import com.opencsv.CSVWriter;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -95,6 +104,37 @@ public class IndexDataController {
       @RequestParam(defaultValue = "DAILY") PeriodType periodType
   ) {
     return indexDataService.getFavoritePerformances(periodType);
+  }
+
+  @GetMapping("/export/csv")
+  public void exportIndexDataToCsv(
+      @RequestParam(required = false) Long indexInfoId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+      @RequestParam(defaultValue = "baseDate") String sortField,
+      @RequestParam(defaultValue = "desc") String sortDirection,
+      HttpServletResponse response
+  ) throws IOException {
+    Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+    Sort sort = Sort.by(direction, sortField);
+
+    String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    String filename = "index-data-export-" + today + ".csv";
+    String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+
+    response.setContentType("text/csv; charset=UTF-8");
+    response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFilename + "\"");
+
+    OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(),
+        StandardCharsets.UTF_8);
+    writer.write('\uFEFF');
+
+    List<String[]> csvData = indexDataService.getExportableIndexData(indexInfoId, startDate,
+        endDate, sort);
+
+    try (CSVWriter csvWriter = new CSVWriter(writer)) {
+      csvWriter.writeAll(csvData);
+    }
   }
 }
 

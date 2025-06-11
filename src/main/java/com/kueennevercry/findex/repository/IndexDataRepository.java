@@ -30,7 +30,10 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
   boolean existsByBaseDate(LocalDate baseDate);
 
   @Query("SELECT MAX(d.baseDate) FROM IndexData d")
-  LocalDate findLatestBaseDateAcrossAll();
+  Optional<LocalDate> findMaxBaseDate();
+
+  @Query("SELECT MIN(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
+  Optional<LocalDate> findMinBaseDate(@Param("indexInfoId") Long indexInfoId);
 
   @Query("SELECT MAX(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
   Optional<LocalDate> findLatestBaseDateByIndexInfoId(@Param("indexInfoId") Long indexInfoId);
@@ -81,7 +84,4 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       @Param("beforeBaseDate") LocalDate beforeBaseDate,
       @Param("indexInfoId") Long indexInfoId
   );
-
-  @Query("SELECT MAX(d.baseDate) FROM IndexData d")
-  Optional<LocalDate> findMaxBaseDate();
 }
