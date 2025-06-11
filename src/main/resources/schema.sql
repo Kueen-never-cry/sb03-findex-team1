@@ -67,7 +67,7 @@ CREATE TABLE "auto_sync_config"
 CREATE TABLE "integration_tasks"
 (
     "id"            BIGSERIAL PRIMARY KEY,
-    "index_info_id" BIGINT                              NOT NULL,
+    "index_info_id" BIGINT                              NULL,
     "job_type"      VARCHAR(20)                         NOT NULL CHECK (job_type IN ('INDEX_INFO', 'INDEX_DATA')),
     "worker"        VARCHAR(255)                        NOT NULL,
     "job_time"      TIMESTAMP                           NOT NULL,
