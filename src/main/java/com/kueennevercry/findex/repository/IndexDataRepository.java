@@ -73,6 +73,14 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
   List<RankedIndexPerformanceDto> findRankedPerformances(
       @Param("baseDate") LocalDate baseDate,
       @Param("beforeBaseDate") LocalDate beforeBaseDate,
-      @Param("indexInfoId") Long indexInfoId
-  );
+      @Param("indexInfoId") Long indexInfoId);
+
+  @Query("SELECT MAX(d.baseDate) FROM IndexData d")
+  Optional<LocalDate> findMaxBaseDate();
+
+  /**
+   * 특정 지수 정보에 연관된 모든 지수 데이터 삭제
+   * IndexInfo 삭제 시 연관 데이터 정리용
+   */
+  void deleteAllByIndexInfoId(Long indexInfoId);
 }
