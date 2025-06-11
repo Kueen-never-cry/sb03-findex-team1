@@ -36,33 +36,18 @@ public class DefaultOpenApiClient implements OpenApiClient {
     }
   }
 
-  /* FIXME : 더 좋은 방법이 있지 않을까?  */
   private URI buildUrl(IndexInfoApiRequest indexInfoApiRequest) {
-
-    // 1. 자동 인코딩이 필요한 파라미터를 먼저 빌드
-    String encodedOtherParams = UriComponentsBuilder.newInstance()
+    return UriComponentsBuilder.newInstance()
+        .scheme(properties.getScheme())
+        .host(properties.getHost())
+        .path(properties.getPath())
+        .queryParam("serviceKey", properties.getApiEncodedKey())
         .queryParam("resultType", "json")
         .queryParam("pageNo", indexInfoApiRequest.getPageNo())
         .queryParam("numOfRows", indexInfoApiRequest.getNumOfRows())
         .queryParam("beginBasDt", indexInfoApiRequest.getBeginBasDt())
         .queryParam("endBasDt", indexInfoApiRequest.getEndBasDt())
-        .build()
-        .getQuery();
-
-    // 2. 인코딩하지말고, 인코딩이 되어있는 키 값 그대로 써야하므로 분리
-    String query =
-        "?serviceKey=" + properties.getApiEncodedKey() + "&" + encodedOtherParams;
-
-    // 3. 최종 URI 조립
-    String fullUrl = UriComponentsBuilder.newInstance()
-        .scheme(properties.getScheme())
-        .host(properties.getHost())
-        .path(properties.getPath())
-        .build(false)
-        .toUriString()
-        + query;
-
-    System.out.println("11111 " + "URI.create(fullUrl) = " + URI.create(fullUrl));
-    return URI.create(fullUrl);
+        .build(true)
+        .toUri();
   }
 }
