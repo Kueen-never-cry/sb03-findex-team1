@@ -218,7 +218,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     if (startDate == null) {
-      startDate = indexDataRepository.findMinBaseDate(indexInfoId)
+      startDate = indexDataRepository.findMinBaseDateByIndexIfoId(indexInfoId)
           .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
     }
 

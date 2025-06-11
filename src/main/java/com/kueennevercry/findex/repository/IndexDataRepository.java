@@ -33,7 +33,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
   Optional<LocalDate> findMaxBaseDate();
 
   @Query("SELECT MIN(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
-  Optional<LocalDate> findMinBaseDate(@Param("indexInfoId") Long indexInfoId);
+  Optional<LocalDate> findMinBaseDateByIndexIfoId(@Param("indexInfoId") Long indexInfoId);
 
   @Query("SELECT MAX(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
   Optional<LocalDate> findLatestBaseDateByIndexInfoId(@Param("indexInfoId") Long indexInfoId);
@@ -84,12 +84,8 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       @Param("beforeBaseDate") LocalDate beforeBaseDate,
       @Param("indexInfoId") Long indexInfoId);
 
-  @Query("SELECT MAX(d.baseDate) FROM IndexData d")
-  Optional<LocalDate> findMaxBaseDate();
-
   /**
-   * 특정 지수 정보에 연관된 모든 지수 데이터 삭제
-   * IndexInfo 삭제 시 연관 데이터 정리용
+   * 특정 지수 정보에 연관된 모든 지수 데이터 삭제 IndexInfo 삭제 시 연관 데이터 정리용
    */
   void deleteAllByIndexInfoId(Long indexInfoId);
 }
