@@ -37,3 +37,7 @@ springdoc:
 openapi:
   base-url: https://apis.data.go.kr/1160100/service/GetMarketIndexInfoService
   api-key: ${OPEN_API_KEY}
+  api-encoded-key: ${OPEN_API_ENCODED_KEY}
+  scheme: "https"
+  host: "apis.data.go.kr"
+  path: "/1160100/service/GetMarketIndexInfoService/getStockMarketIndex"
