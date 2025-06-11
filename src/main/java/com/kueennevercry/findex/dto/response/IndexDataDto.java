@@ -20,8 +20,6 @@ public record IndexDataDto(
     BigDecimal fluctuationRate,
     Long tradingQuantity,
     Long tradingPrice,
-    Long marketTotalAmount
-
-) {
+    Long marketTotalAmount) {
 
 }
