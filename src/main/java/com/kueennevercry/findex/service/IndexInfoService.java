@@ -3,6 +3,7 @@ package com.kueennevercry.findex.service;
 import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
 import com.kueennevercry.findex.dto.response.IndexInfoDto;
 import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
+import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.IndexInfoMapper;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,17 @@ public class IndexInfoService {
     IndexInfo indexInfo = indexInfoRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("지수 정보를 찾을 수 없습니다. ID: " + id));
     return indexInfoMapper.toDto(indexInfo);
+  }
+
+  /**
+   * 전체 지수 정보 요약 목록 조회
+   * ID, 지수명, 지수 분류명만 포함한 간단한 목록을 반환
+   */
+  public List<IndexInfoSummaryDto> findAllSummaries() {
+    List<IndexInfo> indexInfos = indexInfoRepository.findAllByOrderByIdAsc();
+    return indexInfos.stream()
+        .map(indexInfoMapper::toSummaryDto)
+        .toList();
   }
 
   /**
