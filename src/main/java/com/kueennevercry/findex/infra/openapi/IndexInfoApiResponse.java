@@ -47,7 +47,7 @@ public record IndexInfoApiResponse
         LocalDate basePointInTime,  // 기준 시점
 
         @JsonProperty("basIdx")
-        Float baseIndex,  // 기준 지수
+        BigDecimal baseIndex,  // 기준 지수
 
         //지수 데이터 정보
         @JsonProperty("basDt")
