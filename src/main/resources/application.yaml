@@ -1,11 +1,11 @@
 spring:
   application:
     name: findex
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/findex
-#    username: postgres
-#    password: 1234
-#    driver-class-name: org.postgresql.Driver
+  #  datasource:
+  #    url: jdbc:postgresql://localhost:5432/findex
+  #    username: postgres
+  #    password: 1234
+  #    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,6 +18,10 @@ spring:
   # DB config
   config:
     import: "classpath:db.yaml"
+
+batch:
+  index-sync:
+    cron: "0 0 0 * * *"
 
 # Open API
 # 개발 환경: Run > Edit Configurations > Environment variables에 `OPEN_API_KEY=발급 받은 키`를 등록합니다.
