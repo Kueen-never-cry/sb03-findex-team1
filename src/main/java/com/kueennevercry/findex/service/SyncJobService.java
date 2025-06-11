@@ -2,14 +2,14 @@ package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.dto.CursorPageResponseSyncJobDto;
 import com.kueennevercry.findex.dto.SyncJobDto;
+import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.IntegrationJobType;
 import com.kueennevercry.findex.entity.IntegrationResultType;
 import com.kueennevercry.findex.entity.IntegrationTask;
 import com.kueennevercry.findex.entity.SourceType;
-import com.kueennevercry.findex.infra.openapi.IndexInfoApiRequest;
-import com.kueennevercry.findex.infra.openapi.IndexInfoApiResponse;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IntegrationTaskMapper;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
@@ -37,9 +37,10 @@ public class SyncJobService {
   }
 
   public List<SyncJobDto> syncIndexInfo() {
-
-    IndexInfoApiRequest apiRequestParams = IndexInfoApiRequest.builder().pageNo(1).numOfRows(5)
+    IndexInfoApiRequest apiRequestParams = IndexInfoApiRequest.builder().numOfRows(500).pageNo(1)
+        .basDt("20250610") // 하루치 데이터를 기준으로 지수정보 카테고리화
         .build();
+
     // 1. 순수 openApi에서 가져온  데이터
     List<IndexInfoApiResponse> indexDataList = openApiClient.fetchAllIndexData(apiRequestParams);
 

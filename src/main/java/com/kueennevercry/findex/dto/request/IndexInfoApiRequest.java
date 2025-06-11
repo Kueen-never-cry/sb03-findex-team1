@@ -1,4 +1,4 @@
-package com.kueennevercry.findex.infra.openapi;
+package com.kueennevercry.findex.dto.request;
 
 import lombok.Builder;
 import lombok.Getter;

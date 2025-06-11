@@ -3,15 +3,19 @@ package com.kueennevercry.findex.infra.openapi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kueennevercry.findex.config.OpenApiProperties;
+import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DefaultOpenApiClient implements OpenApiClient {
@@ -46,6 +50,7 @@ public class DefaultOpenApiClient implements OpenApiClient {
         .queryParam("numOfRows", indexInfoApiRequest.getNumOfRows())
         .queryParam("beginBasDt", indexInfoApiRequest.getBeginBasDt())
         .queryParam("endBasDt", indexInfoApiRequest.getEndBasDt())
+        .queryParam("basDt", indexInfoApiRequest.getBasDt())
         .build()
         .getQuery();
 
@@ -62,7 +67,6 @@ public class DefaultOpenApiClient implements OpenApiClient {
         .toUriString()
         + query;
 
-    System.out.println("11111 " + "URI.create(fullUrl) = " + URI.create(fullUrl));
     return URI.create(fullUrl);
   }
 }
