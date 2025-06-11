@@ -2,6 +2,7 @@ package com.kueennevercry.findex.repository;
 
 import com.kueennevercry.findex.entity.IndexInfo;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,4 +31,13 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
    * 지수 정보 중 favorite = true인 것을 조회
    */
   List<IndexInfo> findAllByFavoriteTrue();
+
+  Optional<IndexInfo> findByIndexNameAndIndexClassification(String indexName,
+      String indexClassification);
+
+  /**
+   * 전체 지수 정보 요약 목록 조회 (ID 기준 오름차순 정렬)
+   * 요약 정보용으로 ID, 지수명, 지수 분류명만 필요
+   */
+  List<IndexInfo> findAllByOrderByIdAsc();
 }

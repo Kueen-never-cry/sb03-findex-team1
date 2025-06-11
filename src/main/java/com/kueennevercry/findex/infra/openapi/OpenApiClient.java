@@ -1,15 +1,10 @@
 package com.kueennevercry.findex.infra.openapi;
 
-import com.kueennevercry.findex.dto.response.IndexDataDto;
-import com.kueennevercry.findex.entity.IndexData;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
+import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import java.util.List;
 
 public interface OpenApiClient {
 
-  List<IndexDataDto> fetchIndexData(String indexCode, String endpoint, LocalDate from,
-      LocalDate to)
-      throws IOException, URISyntaxException;
+  List<IndexInfoApiResponse> fetchAllIndexData(IndexInfoApiRequest indexInfoApiRequest);
 }
