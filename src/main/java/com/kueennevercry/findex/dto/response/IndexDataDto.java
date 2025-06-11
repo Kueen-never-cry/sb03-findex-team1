@@ -1,12 +1,9 @@
 package com.kueennevercry.findex.dto.response;
 
 import com.kueennevercry.findex.entity.SourceType;
-import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Builder
 public record IndexDataDto(
     Long id,
     Long indexInfoId,
