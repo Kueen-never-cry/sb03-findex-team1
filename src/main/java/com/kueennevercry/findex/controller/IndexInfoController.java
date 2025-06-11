@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @RequestMapping("/api/index-infos")
@@ -58,5 +59,14 @@ public class IndexInfoController {
 
     IndexInfoDto updatedIndexInfo = indexInfoService.update(id, request);
     return ResponseEntity.ok(updatedIndexInfo);
+  }
+
+  /**
+   * 지수 정보 삭제 DELETE /api/index-infos/{id}
+   */
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteIndexInfo(@PathVariable Long id) {
+    indexInfoService.delete(id);
+    return ResponseEntity.noContent().build(); // HTTP 204 No Content
   }
 }

@@ -25,3 +25,14 @@ Content-Type: application/json
   "baseIndex": 8000,
   "favorite": true
 }
+
+### 지수 정보 삭제 테스트
+
+### 1. 정상 삭제 테스트 (연관 데이터 포함)
+DELETE http://localhost:8080/api/index-infos/187
+
+### 2. 존재하지 않는 ID 삭제 테스트 (에러 발생)
+DELETE http://localhost:8080/api/index-infos/99999
+
+### 3. 삭제 후 조회 테스트 (삭제 확인용)
+GET http://localhost:8080/api/index-infos/187

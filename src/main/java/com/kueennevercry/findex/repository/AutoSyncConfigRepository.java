@@ -17,6 +17,11 @@ public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, 
 
   @Query("SELECT c FROM AutoSyncConfig c JOIN FETCH c.indexInfo WHERE c.id = :id")
   Optional<AutoSyncConfig> findById(@Param("id") Long id);
-
+  
   List<AutoSyncConfig> findAllByEnabledTrue();
+  /**
+   * 특정 지수 정보에 연관된 자동 연동 설정 삭제
+   * IndexInfo 삭제 시 연관 데이터 정리용
+   */
+  void deleteByIndexInfo_Id(Long indexInfoId);
 }

@@ -11,7 +11,11 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "openapi")
 public class OpenApiProperties {
 
+  private String scheme;
+  private String host;
+  private String path;
   private String baseUrl;
   private String apiKey;
+  private String apiEncodedKey;
 }
 

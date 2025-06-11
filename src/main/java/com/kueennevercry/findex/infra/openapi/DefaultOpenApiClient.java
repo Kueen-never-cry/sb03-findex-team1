@@ -3,16 +3,16 @@ package com.kueennevercry.findex.infra.openapi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kueennevercry.findex.config.OpenApiProperties;
-import com.kueennevercry.findex.dto.response.IndexDataDto;
+import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 @RequiredArgsConstructor
@@ -22,37 +22,35 @@ public class DefaultOpenApiClient implements OpenApiClient {
   private final OpenApiProperties properties;
   private final ObjectMapper objectMapper;
 
+
+  // TODO : 외부응답 500 에러일때 전역 에러 처리
   @Override
-  public List<IndexDataDto> fetchIndexData(String indexCode, String endpoint, LocalDate from,
-      LocalDate to)
-      throws IOException, URISyntaxException {
-    URI url = buildUrl(indexCode, endpoint, from, to);
-    ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+  public List<IndexInfoApiResponse> fetchAllIndexData(IndexInfoApiRequest indexInfoApiRequest) {
+    ResponseEntity<String> response = restTemplate.getForEntity(buildUrl(indexInfoApiRequest),
+        String.class);
+    try {
+      JsonNode root = objectMapper.readTree(response.getBody());
+      JsonNode items = root.path("response").path("body").path("items").path("item");
 
-    return convert(response.getBody());
+      return objectMapper.readerForListOf(IndexInfoApiResponse.class).readValue(items);
+    } catch (IOException e) {
+      throw new IllegalStateException("외부 API 응답 JSON 파싱 실패", e);
+    }
   }
 
-  private List<IndexDataDto> convert(String json) throws IOException {
-    JsonNode root = objectMapper.readTree(json);
-    JsonNode items = root.path("response").path("body").path("items").path("item");
-
-    return objectMapper.readerForListOf(IndexDataDto.class).readValue(items);
-  }
-
-  private URI buildUrl(String indexCode, String endpoint, LocalDate from, LocalDate to)
-      throws URISyntaxException {
-    String serviceKey = properties.getApiKey();
-
-    String base = properties.getBaseUrl() + endpoint
-        // endpoint: [getStockMarketIndex | getBoundMarketIndex | getDerivationProductMarketIndex]
-        + "?serviceKey=" + serviceKey
-//        + "&idxNm=" + indexCode
-        + "&beginBasDt=" + from
-        + "&endBasDt=" + to
-        + "&resultType=json";
-
-    // + 기호는 인코딩에서 제외되기 때문에 미리 변환하고
-    // URI 클래스를 사용하면 URL 전송 할 때 문자열 그대로 날아가는 것이 아닌, 한 번 인코딩을 해서 보내준다
-    return new URI(base.replace("+", "%2B"));
+  private URI buildUrl(IndexInfoApiRequest indexInfoApiRequest) {
+    return UriComponentsBuilder.newInstance()
+        .scheme(properties.getScheme())
+        .host(properties.getHost())
+        .path(properties.getPath())
+        .queryParam("serviceKey", properties.getApiEncodedKey())
+        .queryParam("resultType", "json")
+        .queryParam("pageNo", indexInfoApiRequest.getPageNo())
+        .queryParam("numOfRows", indexInfoApiRequest.getNumOfRows())
+        .queryParam("beginBasDt", indexInfoApiRequest.getBeginBasDt())
+        .queryParam("endBasDt", indexInfoApiRequest.getEndBasDt())
+        .queryParam("basDt", indexInfoApiRequest.getBasDt())
+        .build(true)
+        .toUri();
   }
 }
