@@ -69,7 +69,19 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
 
     Long nextIdAfter = dtoList.isEmpty() ? null : dtoList.get(dtoList.size() - 1).id();
 
-    return new CursorPageResponse<>(dtoList, null, nextIdAfter, size, dtoList.size(), hasNext);
+    Long countResult = queryFactory
+        .select(config.count())
+        .from(config)
+        .leftJoin(config.indexInfo, index)
+        .where(
+            indexInfoIdEq(indexInfoId, index),
+            enabledEq(enabled, config)
+        )
+        .fetchOne();
+
+    long totalElements = countResult != null ? countResult : 0L;
+
+    return new CursorPageResponse<>(dtoList, null, nextIdAfter, size, totalElements, hasNext);
   }
 
   private BooleanExpression indexInfoIdEq(Long indexInfoId, QIndexInfo index) {

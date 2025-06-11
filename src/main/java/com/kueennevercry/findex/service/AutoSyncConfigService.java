@@ -1,7 +1,5 @@
 package com.kueennevercry.findex.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.dto.response.AutoSyncConfigDto;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
@@ -10,9 +8,6 @@ import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.AutoSyncConfigMapper;
 import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +46,7 @@ public class AutoSyncConfigService {
       int size
   ) {
     Long decodedIdAfter =
-        idAfter != null ? idAfter : (cursor != null ? decodeCursor(cursor) : null);
+        idAfter != null ? idAfter : (cursor != null ? Long.parseLong(cursor) : null);
 
     CursorPageResponse<AutoSyncConfigDto> response =
         autoSyncConfigRepository.findAllByParameters(
@@ -59,7 +54,7 @@ public class AutoSyncConfigService {
         );
 
     String nextCursor = (response.hasNext() && !response.content().isEmpty())
-        ? encodeCursor(response.content().get(response.content().size() - 1).id())
+        ? String.valueOf(response.content().get(response.content().size() - 1).id())
         : null;
 
     return new CursorPageResponse<>(
@@ -70,26 +65,5 @@ public class AutoSyncConfigService {
         response.totalElements(),
         response.hasNext()
     );
-  }
-
-  private Long decodeCursor(String cursor) {
-    try {
-      byte[] decoded = Base64.getUrlDecoder().decode(cursor);
-      String json = new String(decoded, StandardCharsets.UTF_8);
-      JsonNode node = new ObjectMapper().readTree(json);
-      return node.get("id").asLong();
-    } catch (Exception e) {
-      throw new IllegalArgumentException("유효하지 않은 커서 형식입니다: " + cursor, e);
-    }
-  }
-
-  private String encodeCursor(Long id) {
-    try {
-      Map<String, Object> map = Map.of("id", id);
-      String json = new ObjectMapper().writeValueAsString(map);
-      return Base64.getUrlEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-    } catch (Exception e) {
-      throw new RuntimeException("커서를 생성하는 데 실패했습니다. ID: " + id, e);
-    }
   }
 }
