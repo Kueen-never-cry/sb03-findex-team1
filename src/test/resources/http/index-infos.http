@@ -7,10 +7,21 @@ Content-Type: application/json
 
 {
   "indexClassification": "테마분류",
-  "indexName": "나스닥100",
-  "employedItemsCount": 50,
+  "indexName": "s&p100",
+  "employedItemsCount": 100,
   "basePointInTime": "2024-01-01",
-  "baseIndex": 1000.0,
+  "baseIndex": 6000.0,
   "sourceType": "USER",
+  "favorite": false
+}
+
+### 지수 정보 수정 테스트 - 전체 필드 수정
+PATCH http://localhost:8080/api/index-infos/187
+Content-Type: application/json
+
+{
+  "employedItemsCount": 100,
+  "basePointInTime": "2024-02-10",
+  "baseIndex": 8000,
   "favorite": true
 }

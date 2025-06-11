@@ -1,41 +1,19 @@
 package com.kueennevercry.findex.dto.request;
 
-import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class IndexInfoCreateRequest {
+/**
+ * 지수 정보 생성 요청 DTO 데이터 전달 목적으로만 사용
+ */
+public record IndexInfoCreateRequest(
+    String indexClassification,
+    String indexName,
+    Integer employedItemsCount,
+    LocalDate basePointInTime,
+    BigDecimal baseIndex,
+    SourceType sourceType,
+    Boolean favorite) {
 
-  private String indexClassification;
-  private String indexName;
-  private Integer employedItemsCount;
-  private LocalDate basePointInTime;
-  private Float baseIndex;
-  private SourceType sourceType;
-
-  @Builder.Default
-  private Boolean favorite = false; // 기본값 false
-
-  /**
-   * 요청 DTO를 엔티티로 변환
-   */
-  public IndexInfo toEntity() {
-    return IndexInfo.builder()
-        .indexClassification(this.indexClassification)
-        .indexName(this.indexName)
-        .employedItemsCount(this.employedItemsCount)
-        .basePointInTime(this.basePointInTime)
-        .baseIndex(this.baseIndex)
-        .sourceType(this.sourceType)
-        .favorite(this.favorite)
-        .build();
-  }
 }

@@ -1,7 +1,7 @@
 package com.kueennevercry.findex.mapper;
 
-import com.kueennevercry.findex.dto.AutoSyncConfigDto;
 import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
+import com.kueennevercry.findex.dto.response.AutoSyncConfigDto;
 import com.kueennevercry.findex.entity.AutoSyncConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
