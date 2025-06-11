@@ -17,6 +17,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
   List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from,
       LocalDate to, Pageable pageable);
+  // pageable -> String sortField, String sortDirection, int size
 
   boolean existsByIndexInfoId(Long indexInfoId);
 

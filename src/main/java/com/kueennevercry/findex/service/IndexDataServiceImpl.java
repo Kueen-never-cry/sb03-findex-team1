@@ -13,6 +13,7 @@ import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
+import com.kueennevercry.findex.repository.IndexDataCustomRepository;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.io.IOException;
@@ -28,9 +29,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +41,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
+  private final IndexDataCustomRepository indexDataCustomRepository;
   private final IndexDataMapper indexDataMapper;
 
   //------------지수 데이터-----------//
@@ -83,35 +83,11 @@ public class IndexDataServiceImpl implements IndexDataService {
       Long idAfter, String cursor,
       String sortField, String sortDirection, int size) {
 
-    Sort.Direction direction;
+    CursorPageResponse<IndexDataDto> dto = indexDataCustomRepository.findCursorPage(
+        indexInfoId, from, to, idAfter, cursor,
+        sortField, sortDirection, size);
 
-    if ("asc".equalsIgnoreCase(sortDirection)) {
-      direction = Sort.Direction.ASC;
-    } else {
-      direction = Sort.Direction.DESC;
-    }
-
-    Sort sort = Sort.by(direction, sortField);
-
-    Pageable pageable = PageRequest.of(0, size, sort);
-
-    List<IndexDataDto> dto = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
-            indexInfoId, from, to,
-            pageable)
-        .stream()
-        .map(indexDataMapper::toDto)
-        .toList();
-
-    CursorPageResponse<IndexDataDto> cursorDto = indexDataMapper.toCursorDto(
-        dto,
-        cursor,
-        idAfter,
-        size,
-        (long) dto.size(),
-        dto.size() > size
-    );
-
-    return cursorDto;
+    return dto;
   }
 
   @Override
