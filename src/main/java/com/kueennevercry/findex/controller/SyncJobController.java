@@ -5,6 +5,7 @@ import com.kueennevercry.findex.dto.SyncJobDto;
 import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
 import com.kueennevercry.findex.service.SyncJobService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +37,8 @@ public class SyncJobController {
   : Open API를 통해 지수 데이터를 연동합니다
  */
   @PostMapping("/index-data")
-  public SyncJobDto syncIndexData(@RequestBody IndexDataSyncRequest indexDataSyncRequest) {
-    //XXX : 구조만 잡아놓음
-    return null;
+  public List<SyncJobDto> syncIndexData(@RequestBody @Valid IndexDataSyncRequest request) {
+    return this.syncJobService.syncIndexData(request);
   }
 
   /*
