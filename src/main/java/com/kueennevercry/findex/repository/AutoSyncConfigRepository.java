@@ -2,6 +2,7 @@ package com.kueennevercry.findex.repository;
 
 import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexInfo;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,6 @@ public interface AutoSyncConfigRepository extends JpaRepository<AutoSyncConfig, 
 
   @Query("SELECT c FROM AutoSyncConfig c JOIN FETCH c.indexInfo WHERE c.id = :id")
   Optional<AutoSyncConfig> findById(@Param("id") Long id);
+
+  List<AutoSyncConfig> findAllByEnabledTrue();
 }
