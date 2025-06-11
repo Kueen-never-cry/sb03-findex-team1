@@ -67,7 +67,7 @@ CREATE TABLE "auto_sync_config"
 CREATE TABLE "integration_tasks"
 (
     "id"            BIGSERIAL PRIMARY KEY,
-    "index_info_id" BIGINT                              NOT NULL,
+    "index_info_id" BIGINT                              NULL,
     "job_type"      VARCHAR(20)                         NOT NULL CHECK (job_type IN ('INDEX_INFO', 'INDEX_DATA')),
     "worker"        VARCHAR(255)                        NOT NULL,
     "job_time"      TIMESTAMP                           NOT NULL,
@@ -82,6 +82,8 @@ COMMENT ON COLUMN "integration_tasks"."job_type" IS 'ENUM("INDEX_INFO", "INDEX_D
 COMMENT ON COLUMN "integration_tasks"."worker" IS 'IP 또는 SYSTEM';
 COMMENT ON COLUMN "integration_tasks"."result" IS 'ENUM("SUCCESS", "FAILED")';
 
+alter table integration_tasks
+    alter column index_info_id drop not null;
 
 --- 더미데이터 INSERT 구문
 INSERT INTO index_info (id, index_classification, index_name, employed_items_count,
