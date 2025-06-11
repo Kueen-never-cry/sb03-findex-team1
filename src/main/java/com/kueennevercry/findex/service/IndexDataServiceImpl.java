@@ -4,6 +4,7 @@ import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
@@ -12,12 +13,11 @@ import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
+import com.kueennevercry.findex.repository.IndexDataCustomRepository;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +39,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
+  private final IndexDataCustomRepository indexDataCustomRepository;
   private final IndexDataMapper indexDataMapper;
 
   //------------지수 데이터-----------//
@@ -75,23 +76,16 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
-      String sortBy, String sortDirection) {
+  public CursorPageResponse<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from,
+      LocalDate to,
+      Long idAfter, String cursor,
+      String sortField, String sortDirection, int size) {
 
-    Sort.Direction direction;
+    CursorPageResponse<IndexDataDto> dto = indexDataCustomRepository.findCursorPage(
+        indexInfoId, from, to, idAfter, cursor,
+        sortField, sortDirection, size);
 
-    if ("asc".equalsIgnoreCase(sortDirection)) {
-      direction = Sort.Direction.ASC;
-    } else {
-      direction = Sort.Direction.DESC;
-    }
-
-    Sort sort = Sort.by(direction, sortBy);
-
-    return indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(indexInfoId, from, to, sort)
-        .stream()
-        .map(indexDataMapper::toDto)
-        .toList();
+    return dto;
   }
 
   @Override
@@ -118,19 +112,41 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   //------------ 대시보드 -----------//
   @Override
-  public IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
-      throws IOException, URISyntaxException {
-    // FIXME : develop 브랜치 안정화 후 재구님이 추가 예정
-    return null;
+  public IndexChartDto getChart(Long indexInfoId, PeriodType periodType) {
+    IndexInfo indexInfo = indexInfoRepository.findById(indexInfoId)
+        .orElseThrow(() -> new IllegalStateException("지수 정보가 없습니다."));
+
+    LocalDate endDate = indexDataRepository.findLatestBaseDateByIndexInfoId(indexInfoId)
+        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    LocalDate startDate = calculateStartDate(endDate, periodType);
+
+    List<IndexData> indexDataList = indexDataRepository
+        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(indexInfoId, startDate, endDate);
+
+    List<ChartDataPoint> points = indexDataList.stream()
+        .map(d -> new ChartDataPoint(d.getBaseDate(), d.getClosingPrice()))
+        .toList();
+
+    return new IndexChartDto(
+        indexInfoId,
+        indexInfo.getIndexClassification(),
+        indexInfo.getIndexName(),
+        periodType,
+        points,
+        calculateMovingAverage(points, 5),
+        calculateMovingAverage(points, 20)
+    );
   }
 
   @Override
-  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId, String periodType,
-      int limit) {
+  public List<RankedIndexPerformanceDto> getPerformanceRanking(
+      Long indexInfoId,
+      PeriodType periodType,
+      int limit
+  ) {
     LocalDate baseDate = indexDataRepository.findMaxBaseDate()
         .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
-    LocalDate beforeBaseDate = calculateStartDate(baseDate,
-        PeriodType.valueOf(periodType.toUpperCase()));
+    LocalDate beforeBaseDate = calculateStartDate(baseDate, periodType);
 
     List<RankedIndexPerformanceDto> raw = indexDataRepository.findRankedPerformances(
         baseDate, beforeBaseDate, indexInfoId
@@ -194,7 +210,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   @Override
   public List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
-      LocalDate endDate, Sort sort) {
+      LocalDate endDate, Pageable pageable) {
     LocalDate now = LocalDate.now();
 
     if (endDate == null) {
@@ -207,7 +223,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     List<IndexData> dataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
-        indexInfoId, startDate, endDate, sort);
+        indexInfoId, startDate, endDate, pageable);
 
     if (dataList.size() > 20_000) {
       log.warn("지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다.", dataList.size());
@@ -240,14 +256,18 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {
     List<ChartDataPoint> result = new ArrayList<>();
+
     for (int i = 0; i <= points.size() - windowSize; i++) {
-      double sum = 0.0;
+      BigDecimal sum = BigDecimal.ZERO;
+
       for (int j = 0; j < windowSize; j++) {
-        sum += points.get(i + j).value();
+        sum = sum.add(points.get(i + j).closingPrice());
       }
-      double average = sum / windowSize;
-      result.add(new ChartDataPoint(points.get(i).date(), average));
+
+      BigDecimal average = sum.divide(BigDecimal.valueOf(windowSize), 4, RoundingMode.HALF_UP);
+      result.add(new ChartDataPoint(points.get(i).baseDate(), average));
     }
+
     return result;
   }
 
@@ -256,7 +276,8 @@ public class IndexDataServiceImpl implements IndexDataService {
       case DAILY -> baseDate.minusDays(1);
       case WEEKLY -> baseDate.minusWeeks(1);
       case MONTHLY -> baseDate.minusMonths(1);
-      default -> baseDate;
+      case QUARTERLY -> baseDate.minusMonths(3);
+      case YEARLY -> baseDate.minusYears(1);
     };
   }
 }

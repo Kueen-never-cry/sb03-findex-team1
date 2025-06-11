@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +16,14 @@ import org.springframework.stereotype.Repository;
 public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
   List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from,
-      LocalDate to, Sort sort);
+      LocalDate to, Pageable pageable);
+  // pageable -> String sortField, String sortDirection, int size
+
+  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(
+      Long indexInfoId,
+      LocalDate from,
+      LocalDate to
+  );
 
   boolean existsByIndexInfoId(Long indexInfoId);
 
@@ -28,6 +34,9 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
   @Query("SELECT MIN(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
   Optional<LocalDate> findMinBaseDate(@Param("indexInfoId") Long indexInfoId);
+
+  @Query("SELECT MAX(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
+  Optional<LocalDate> findLatestBaseDateByIndexInfoId(@Param("indexInfoId") Long indexInfoId);
 
   @Query("SELECT d FROM IndexData d WHERE d.indexInfo.id = :indexInfoId AND d.baseDate = :baseDate")
   Optional<IndexData> findByIndexInfoIdAndBaseDate(Long indexInfoId, LocalDate baseDate);

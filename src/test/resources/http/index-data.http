@@ -1,5 +1,5 @@
 ### 지수 차트 조회
-GET http://localhost:8080/api/index-data/5/chart?periodType=YEARLY
+GET http://localhost:8080/api/index-data/5/chart?periodType=MONTHLY
 Content-Type: application/json
 
 ### 지수 성과 랭킹 조회 DAILY without indexInfoId
