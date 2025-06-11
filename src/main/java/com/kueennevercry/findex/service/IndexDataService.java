@@ -9,8 +9,6 @@ import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
 import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -30,10 +28,9 @@ public interface IndexDataService {
   void delete(Long id);
 
   // 대시보드
-  IndexChartDto getChart(Long indexInfoId, PeriodType periodType)
-      throws IOException, URISyntaxException;
+  IndexChartDto getChart(Long indexInfoId, PeriodType periodType);
 
-  List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId, String periodType,
+  List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId, PeriodType periodType,
       int limit);
 
   List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);

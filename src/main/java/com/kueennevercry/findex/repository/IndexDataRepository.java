@@ -19,6 +19,12 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       LocalDate to, Pageable pageable);
   // pageable -> String sortField, String sortDirection, int size
 
+  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(
+      Long indexInfoId,
+      LocalDate from,
+      LocalDate to
+  );
+
   boolean existsByIndexInfoId(Long indexInfoId);
 
   boolean existsByBaseDate(LocalDate baseDate);
@@ -28,6 +34,9 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
 
   @Query("SELECT MIN(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
   Optional<LocalDate> findMinBaseDate(@Param("indexInfoId") Long indexInfoId);
+
+  @Query("SELECT MAX(d.baseDate) FROM IndexData d WHERE d.indexInfo.id = :indexInfoId")
+  Optional<LocalDate> findLatestBaseDateByIndexInfoId(@Param("indexInfoId") Long indexInfoId);
 
   @Query("SELECT d FROM IndexData d WHERE d.indexInfo.id = :indexInfoId AND d.baseDate = :baseDate")
   Optional<IndexData> findByIndexInfoIdAndBaseDate(Long indexInfoId, LocalDate baseDate);

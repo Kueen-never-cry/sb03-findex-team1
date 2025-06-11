@@ -173,7 +173,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
                 .and(qIntegrationTask.id.lt(request.getIdAfter()));
         break;
       default:
-        throw new IllegalStateException("Unexpected value: " + sortField);
+        throw new IllegalStateException("Unexpected closingPrice: " + sortField);
     }
 
     return cursorCondition;
