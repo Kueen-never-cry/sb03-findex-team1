@@ -57,7 +57,7 @@ public class IntegrationTask {
   private Instant createdAt;
 
   @ManyToOne
-  @JoinColumn(name = "index_info_id", nullable = false)
+  @JoinColumn(name = "index_info_id")
   private IndexInfo indexInfo;
 
   @PrePersist // 데이터 생성 시 자동으로 실행
