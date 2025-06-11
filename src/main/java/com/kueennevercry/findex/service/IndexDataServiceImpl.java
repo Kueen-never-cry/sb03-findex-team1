@@ -4,6 +4,7 @@ import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
@@ -12,6 +13,7 @@ import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
+import com.kueennevercry.findex.repository.IndexDataCustomRepository;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.io.IOException;
@@ -27,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
+  private final IndexDataCustomRepository indexDataCustomRepository;
   private final IndexDataMapper indexDataMapper;
 
   //------------지수 데이터-----------//
@@ -75,23 +78,16 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
-      String sortBy, String sortDirection) {
+  public CursorPageResponse<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from,
+      LocalDate to,
+      Long idAfter, String cursor,
+      String sortField, String sortDirection, int size) {
 
-    Sort.Direction direction;
+    CursorPageResponse<IndexDataDto> dto = indexDataCustomRepository.findCursorPage(
+        indexInfoId, from, to, idAfter, cursor,
+        sortField, sortDirection, size);
 
-    if ("asc".equalsIgnoreCase(sortDirection)) {
-      direction = Sort.Direction.ASC;
-    } else {
-      direction = Sort.Direction.DESC;
-    }
-
-    Sort sort = Sort.by(direction, sortBy);
-
-    return indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(indexInfoId, from, to, sort)
-        .stream()
-        .map(indexDataMapper::toDto)
-        .toList();
+    return dto;
   }
 
   @Override
@@ -194,7 +190,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   @Override
   public List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
-      LocalDate endDate, Sort sort) {
+      LocalDate endDate, Pageable pageable) {
     LocalDate now = LocalDate.now();
 
     if (endDate == null) {
@@ -207,7 +203,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     List<IndexData> dataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
-        indexInfoId, startDate, endDate, sort);
+        indexInfoId, startDate, endDate, pageable);
 
     if (dataList.size() > 20_000) {
       log.warn("지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다.", dataList.size());

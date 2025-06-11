@@ -3,6 +3,7 @@ package com.kueennevercry.findex.service;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexPerformanceDto;
@@ -12,15 +13,17 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 
 public interface IndexDataService {
 
   // 지수 데이터
   IndexData create(IndexDataCreateRequest request);
 
-  List<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from, LocalDate to,
-      String sortBy, String sortDirection);
+  CursorPageResponse<IndexDataDto> findAllByBaseDateBetween(Long indexInfoId, LocalDate from,
+      LocalDate to,
+      Long idAfter, String cursor,
+      String sortField, String sortDirection, int size);
 
   IndexData update(Long id, IndexDataUpdateRequest request);
 
@@ -36,5 +39,5 @@ public interface IndexDataService {
   List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);
 
   List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
-      LocalDate endDate, Sort sort);
+      LocalDate endDate, Pageable pageable);
 }
