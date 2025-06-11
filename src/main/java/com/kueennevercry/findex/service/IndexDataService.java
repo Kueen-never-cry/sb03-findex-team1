@@ -2,6 +2,7 @@ package com.kueennevercry.findex.service;
 
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
@@ -37,4 +38,7 @@ public interface IndexDataService {
 
   List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
       LocalDate endDate, Pageable pageable);
+
+  // 자동연동
+  void syncIndexData(IndexDataSyncRequest request);
 }

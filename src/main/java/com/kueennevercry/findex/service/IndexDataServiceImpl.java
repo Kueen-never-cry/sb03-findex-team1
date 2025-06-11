@@ -3,6 +3,7 @@ package com.kueennevercry.findex.service;
 import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import com.kueennevercry.findex.dto.request.IndexDataCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.IndexDataUpdateRequest;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexChartDto;
@@ -279,5 +280,14 @@ public class IndexDataServiceImpl implements IndexDataService {
       case QUARTERLY -> baseDate.minusMonths(3);
       case YEARLY -> baseDate.minusYears(1);
     };
+  }
+
+  //------------ 자동연동 -----------//
+  @Override
+  public void syncIndexData(IndexDataSyncRequest request) {
+    log.info("지수 연동 요청 - 대상 ID들: {}, 기간: {} ~ {}",
+        request.indexInfoIds(), request.baseDateFrom(), request.baseDateTo());
+
+    // TODO: 실제 연동 로직 구현
   }
 }
