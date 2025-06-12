@@ -71,7 +71,8 @@ public class IndexDataController {
       startDate = LocalDate.of(1900, 1, 1);
     }
     if (endDate == null) {
-      endDate = LocalDate.now();
+      endDate = LocalDate.of(2100, 1, 1);
+      ;
     }
 
     return ResponseEntity.ok(
