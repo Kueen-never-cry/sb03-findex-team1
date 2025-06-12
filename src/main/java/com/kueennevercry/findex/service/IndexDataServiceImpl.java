@@ -261,11 +261,11 @@ public class IndexDataServiceImpl implements IndexDataService {
       BigDecimal sum = BigDecimal.ZERO;
 
       for (int j = 0; j < windowSize; j++) {
-        sum = sum.add(points.get(i + j).closingPrice());
+        sum = sum.add(points.get(i + j).value());
       }
 
       BigDecimal average = sum.divide(BigDecimal.valueOf(windowSize), 4, RoundingMode.HALF_UP);
-      result.add(new ChartDataPoint(points.get(i).baseDate(), average));
+      result.add(new ChartDataPoint(points.get(i).date(), average));
     }
 
     return result;
