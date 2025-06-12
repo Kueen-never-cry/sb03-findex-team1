@@ -38,9 +38,10 @@ public class SyncJobService {
   private final IndexDataRepository indexDataRepository;
   private final IntegrationTaskMapper integrationTaskMapper;
   private final OpenApiClient openApiClient;
-  private String clientIp = null;
 
   private final IndexDataMapper indexDataMapper;
+
+  private String clientIp = null;
 
   public CursorPageResponseSyncJobDto findAllByParameters(
       SyncJobParameterRequest syncJobParameterRequest) {
@@ -88,7 +89,9 @@ public class SyncJobService {
   }
 
   // 성공한 것과 실패한 것 모두 기록할 수 있게 Transactional 보단 try-catch + save 패턴으로 사용
-  public List<SyncJobDto> syncIndexData(IndexDataSyncRequest request) {
+  public List<SyncJobDto> syncIndexData(IndexDataSyncRequest request, String clientIp) {
+    this.clientIp = clientIp;
+
     LocalDate from = request.baseDateFrom();
     LocalDate to = request.baseDateTo();
 
@@ -101,8 +104,8 @@ public class SyncJobService {
     for (IndexInfo indexInfo : indexInfos) {
       try {
         List<IndexInfoApiResponse> responses = openApiClient
-            .fetchAllIndexDataByNameAndDateRange(indexInfo.getIndexName(), from.toString(),
-                to.toString());
+            .fetchAllIndexDataByNameAndDateRange(indexInfo.getIndexName(), from,
+                to);
 
         // 날짜별로 그룹화
         Map<LocalDate, List<IndexInfoApiResponse>> byDate =
@@ -111,21 +114,19 @@ public class SyncJobService {
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
           List<IndexInfoApiResponse> daily = byDate.getOrDefault(date, List.of());
 
+          if (daily.isEmpty()) {
+            continue;
+          }
+
           try {
-            if (daily.isEmpty()) {
-              // 응답은 있었지만 해당 날짜에 데이터가 없는 경우 성공으로 처리
-              integrationTasks.add(
-                  buildIntegrationTaskEntity(indexInfo, date, IntegrationJobType.INDEX_DATA,
-                      IntegrationResultType.SUCCESS));
-            } else {
-              // 성공
-              for (IndexInfoApiResponse response : daily) {
-                upsertIndexData(indexInfo, response);
-              }
-              integrationTasks.add(
-                  buildIntegrationTaskEntity(indexInfo, date, IntegrationJobType.INDEX_DATA,
-                      IntegrationResultType.SUCCESS));
+            // 성공
+            for (IndexInfoApiResponse response : daily) {
+              upsertIndexData(indexInfo, response);
             }
+            integrationTasks.add(
+                buildIntegrationTaskEntity(indexInfo, date, IntegrationJobType.INDEX_DATA,
+                    IntegrationResultType.SUCCESS));
+
           } catch (Exception e) {
             // 내부적인 오류로 실패
             integrationTasks.add(
