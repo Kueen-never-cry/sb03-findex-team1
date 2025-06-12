@@ -3,6 +3,7 @@ package com.kueennevercry.findex.controller;
 import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
 import com.kueennevercry.findex.dto.response.IndexInfoDto;
+import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.service.IndexInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/index-infos")
@@ -22,6 +24,16 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 public class IndexInfoController {
 
   private final IndexInfoService indexInfoService;
+
+  /**
+   * 지수 정보 요약 목록 조회 GET /api/index-infos/summaries
+   * 지수 ID, 분류, 이름만 포함한 전체 지수 목록을 조회합니다.
+   */
+  @GetMapping("/summaries")
+  public ResponseEntity<List<IndexInfoSummaryDto>> getIndexInfoSummaries() {
+    List<IndexInfoSummaryDto> summaries = indexInfoService.findAllSummaries();
+    return ResponseEntity.ok(summaries);
+  }
 
   /**
    * 특정 ID의 지수 정보 조회 GET /api/index-infos/{id}
