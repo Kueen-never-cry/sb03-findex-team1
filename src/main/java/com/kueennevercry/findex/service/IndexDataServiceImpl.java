@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -121,7 +121,8 @@ public class IndexDataServiceImpl implements IndexDataService {
     LocalDate startDate = calculateStartDate(endDate, periodType);
 
     List<IndexData> indexDataList = indexDataRepository
-        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(indexInfoId, startDate, endDate);
+        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateDesc(indexInfoId, startDate,
+            endDate);
 
     List<ChartDataPoint> points = indexDataList.stream()
         .map(d -> new ChartDataPoint(d.getBaseDate(), d.getClosingPrice()))
@@ -210,7 +211,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   @Override
   public List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
-      LocalDate endDate, Pageable pageable) {
+      LocalDate endDate, Sort sort) {
     LocalDate now = LocalDate.now();
 
     if (endDate == null) {
@@ -223,7 +224,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     List<IndexData> dataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
-        indexInfoId, startDate, endDate, pageable);
+        indexInfoId, startDate, endDate, sort);
 
     if (dataList.size() > 20_000) {
       log.warn("지수 데이터 CSV Export 경고: {}건 대량의 데이터가 요청되었습니다.", dataList.size());

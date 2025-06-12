@@ -40,8 +40,12 @@ public class SyncJobController {
   : Open API를 통해 지수 데이터를 연동합니다
  */
   @PostMapping("/index-data")
-  public List<SyncJobDto> syncIndexData(@RequestBody @Valid IndexDataSyncRequest request) {
-    return this.syncJobService.syncIndexData(request);
+  public List<SyncJobDto> syncIndexData(
+      @RequestBody @Valid IndexDataSyncRequest request,
+      HttpServletRequest httpServletRequest
+  ) {
+    String clientIp = getClientIp(httpServletRequest);
+    return this.syncJobService.syncIndexData(request, clientIp);
   }
 
   /*
@@ -70,5 +74,4 @@ public class SyncJobController {
     }
     return request.getRemoteAddr();
   }
-
 }

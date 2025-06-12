@@ -11,7 +11,7 @@ import com.kueennevercry.findex.dto.response.RankedIndexPerformanceDto;
 import com.kueennevercry.findex.entity.IndexData;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 public interface IndexDataService {
 
@@ -36,5 +36,6 @@ public interface IndexDataService {
   List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType);
 
   List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
-      LocalDate endDate, Pageable pageable);
+      LocalDate endDate, Sort sort);
+
 }
