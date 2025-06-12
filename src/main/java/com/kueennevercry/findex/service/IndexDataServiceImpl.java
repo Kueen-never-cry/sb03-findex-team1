@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -149,28 +148,38 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<RankedIndexPerformanceDto> getPerformanceRanking(
-      Long indexInfoId,
-      PeriodType periodType,
-      int limit
-  ) {
-    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
-        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
-    LocalDate beforeBaseDate = calculateStartDate(baseDate, periodType);
+  @Transactional(readOnly = true)
+  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId,
+      PeriodType period, int limit) {
 
-    List<RankedIndexPerformanceDto> raw = indexDataRepository.findRankedPerformances(
-        baseDate, beforeBaseDate, indexInfoId
-    );
+    LocalDate baseDate = calculateStartDate(period);
 
-    List<RankedIndexPerformanceDto> sorted = raw.stream()
-        .sorted(Comparator.comparing(
-            (RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
+    List<IndexInfo> targetInfos = (indexInfoId != null)
+        ? indexInfoRepository.findAllById(List.of(indexInfoId))
+        : indexInfoRepository.findAll();
+
+    List<IndexPerformanceDto> sortedList = targetInfos.stream()
+        .map(info -> {
+          IndexData current = indexDataRepository.findTopByIndexInfoIdOrderByBaseDateDesc(
+              info.getId()).orElse(null);
+
+          IndexData before = indexDataRepository
+              .findByIndexInfoIdAndBaseDateOnlyDateMatch(info.getId(), baseDate)
+              .orElse(null);
+
+          return IndexPerformanceDto.of(info, current, before);
+        })
+        .filter(dto -> dto != null && dto.fluctuationRate() != null)
+        .sorted(Comparator.comparing(IndexPerformanceDto::fluctuationRate).reversed())
         .limit(limit)
         .toList();
 
-    return IntStream.range(0, sorted.size())
-        .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
-        .toList();
+    List<RankedIndexPerformanceDto> rankedList = new ArrayList<>();
+    for (int i = 0; i < sortedList.size(); i++) {
+      rankedList.add(new RankedIndexPerformanceDto(i + 1, sortedList.get(i)));
+    }
+
+    return rankedList;
   }
 
   @Override
