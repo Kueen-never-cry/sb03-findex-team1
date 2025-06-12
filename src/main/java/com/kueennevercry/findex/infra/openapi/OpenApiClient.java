@@ -7,4 +7,7 @@ import java.util.List;
 public interface OpenApiClient {
 
   List<IndexInfoApiResponse> fetchAllIndexData(IndexInfoApiRequest indexInfoApiRequest);
+
+  List<IndexInfoApiResponse> fetchAllIndexDataByNameAndDateRange(String indexName, String beginDate,
+      String endDate);
 }

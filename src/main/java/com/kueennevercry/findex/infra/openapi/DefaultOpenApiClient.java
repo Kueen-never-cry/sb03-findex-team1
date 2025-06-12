@@ -7,6 +7,9 @@ import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
 import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +24,6 @@ public class DefaultOpenApiClient implements OpenApiClient {
   private final RestTemplate restTemplate;
   private final OpenApiProperties properties;
   private final ObjectMapper objectMapper;
-
 
   // TODO : 외부응답 500 에러일때 전역 에러 처리
   @Override
@@ -38,7 +40,53 @@ public class DefaultOpenApiClient implements OpenApiClient {
     }
   }
 
+  @Override
+  public List<IndexInfoApiResponse> fetchAllIndexDataByNameAndDateRange(
+      String indexName, String beginDate, String endDate) {
+
+    int page = 1;
+    int numOfRows = 1000;
+    List<IndexInfoApiResponse> result = new ArrayList<>();
+
+    while (true) {
+      IndexInfoApiRequest request = IndexInfoApiRequest.builder()
+          .pageNo(page)
+          .numOfRows(numOfRows)
+          .idxNm(indexName)
+          .beginBasDt(beginDate)
+          .endBasDt(endDate)
+          .build();
+
+      URI uri = buildUrl(request);
+
+      ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
+
+      try {
+        JsonNode root = objectMapper.readTree(response.getBody());
+        JsonNode items = root.path("response").path("body").path("items").path("item");
+
+        if (items.isMissingNode() || items.isEmpty()) {
+          break;
+        }
+
+        List<IndexInfoApiResponse> pageData = objectMapper
+            .readerForListOf(IndexInfoApiResponse.class)
+            .readValue(items);
+
+        result.addAll(pageData);
+        page++;
+      } catch (IOException e) {
+        throw new IllegalStateException("외부 API 응답 JSON 파싱 실패", e);
+      }
+    }
+
+    return result;
+  }
+
   private URI buildUrl(IndexInfoApiRequest indexInfoApiRequest) {
+    String encodedIdxNm = URLEncoder.encode(indexInfoApiRequest.getIdxNm(), StandardCharsets.UTF_8)
+        .replace("+", "%20");  // 공백 -> + -> %20으로 치환
+
     return UriComponentsBuilder.newInstance()
         .scheme(properties.getScheme())
         .host(properties.getHost())
@@ -47,6 +95,7 @@ public class DefaultOpenApiClient implements OpenApiClient {
         .queryParam("resultType", "json")
         .queryParam("pageNo", indexInfoApiRequest.getPageNo())
         .queryParam("numOfRows", indexInfoApiRequest.getNumOfRows())
+        .queryParam("idxNm", encodedIdxNm)
         .queryParam("beginBasDt", indexInfoApiRequest.getBeginBasDt())
         .queryParam("endBasDt", indexInfoApiRequest.getEndBasDt())
         .queryParam("basDt", indexInfoApiRequest.getBasDt())
