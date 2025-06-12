@@ -29,6 +29,7 @@ public interface IndexInfoMapper {
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
   IndexInfo toEntity(IndexInfoCreateRequest request);
 
   /**
