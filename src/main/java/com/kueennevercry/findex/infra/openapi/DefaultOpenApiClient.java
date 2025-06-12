@@ -84,8 +84,9 @@ public class DefaultOpenApiClient implements OpenApiClient {
   }
 
   private URI buildUrl(IndexInfoApiRequest indexInfoApiRequest) {
-    String encodedIdxNm = URLEncoder.encode(indexInfoApiRequest.getIdxNm(), StandardCharsets.UTF_8)
-        .replace("+", "%20");  // 공백 -> + -> %20으로 치환
+    String encodedIdxNm = indexInfoApiRequest.getIdxNm() == null ? null
+        : URLEncoder.encode(indexInfoApiRequest.getIdxNm(), StandardCharsets.UTF_8)
+            .replace("+", "%20");  // 공백 -> + -> %20으로 치환
 
     return UriComponentsBuilder.newInstance()
         .scheme(properties.getScheme())
