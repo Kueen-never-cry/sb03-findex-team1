@@ -192,7 +192,7 @@ public class SyncJobService {
   }
 
   private void upsertIndexData(IndexInfo indexInfo, IndexInfoApiResponse response) {
-    Optional<IndexData> existing = indexDataRepository.findByIndexInfoIdAndBaseDate(
+    Optional<IndexData> existing = indexDataRepository.findByIndexInfo_IdAndBaseDate(
         indexInfo.getId(), response.baseDate());
 
     if (existing.isPresent()) {

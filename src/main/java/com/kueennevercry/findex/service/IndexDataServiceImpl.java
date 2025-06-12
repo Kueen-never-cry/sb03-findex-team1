@@ -25,7 +25,8 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -173,48 +174,25 @@ public class IndexDataServiceImpl implements IndexDataService {
   }
 
   @Override
-  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType) {
+  @Transactional(readOnly = true)
+  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType period) {
     List<IndexInfo> favorites = indexInfoRepository.findAllByFavoriteTrue();
 
-    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
-        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    return favorites.stream()
+        .map(indexInfo -> {
 
-    LocalDate compareDate = calculateStartDate(baseDate, periodType);
+          IndexData current = indexDataRepository.findTopByIndexInfoIdOrderByBaseDateDesc(
+              indexInfo.getId()).orElse(null);
 
-    List<IndexPerformanceDto> results = new ArrayList<>();
+          IndexData past = indexDataRepository.findByIndexInfoIdAndBaseDateOnlyDateMatch(
+                  indexInfo.getId(),
+                  calculateStartDate(period))
+              .orElse(null);
 
-    for (IndexInfo index : favorites) {
-      Optional<IndexData> currentData = indexDataRepository
-          .findByIndexInfoIdAndBaseDate(index.getId(), baseDate);
-      Optional<IndexData> previousData = indexDataRepository
-          .findClosestBeforeOrEqual(index.getId(), compareDate);
-
-      if (currentData.isEmpty() || previousData.isEmpty()) {
-        continue;
-      }
-
-      IndexData current = currentData.get();
-      IndexData previous = previousData.get();
-
-      BigDecimal currentPrice = current.getClosingPrice();
-      BigDecimal beforePrice = previous.getClosingPrice();
-      BigDecimal versus = currentPrice.subtract(beforePrice);
-      BigDecimal fluctuationRate = beforePrice.compareTo(BigDecimal.ZERO) == 0
-          ? BigDecimal.ZERO
-          : versus.divide(beforePrice, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-
-      results.add(new IndexPerformanceDto(
-          index.getId(),
-          index.getIndexClassification(),
-          index.getIndexName(),
-          versus,
-          fluctuationRate,
-          currentPrice,
-          beforePrice
-      ));
-    }
-
-    return results;
+          return IndexPerformanceDto.of(indexInfo, current, past);
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -290,6 +268,10 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     return result;
+  }
+
+  private LocalDate calculateStartDate(PeriodType type) {
+    return calculateStartDate(LocalDate.now(), type);
   }
 
   private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {
