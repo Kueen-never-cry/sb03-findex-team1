@@ -37,4 +37,5 @@ public interface IndexDataService {
 
   List<String[]> getExportableIndexData(Long indexInfoId, LocalDate startDate,
       LocalDate endDate, Sort sort);
+
 }
