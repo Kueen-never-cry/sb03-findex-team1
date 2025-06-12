@@ -121,7 +121,8 @@ public class IndexDataServiceImpl implements IndexDataService {
     LocalDate startDate = calculateStartDate(endDate, periodType);
 
     List<IndexData> indexDataList = indexDataRepository
-        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(indexInfoId, startDate, endDate);
+        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateDesc(indexInfoId, startDate,
+            endDate);
 
     List<ChartDataPoint> points = indexDataList.stream()
         .map(d -> new ChartDataPoint(d.getBaseDate(), d.getClosingPrice()))

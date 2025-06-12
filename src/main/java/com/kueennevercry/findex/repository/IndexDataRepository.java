@@ -19,7 +19,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
       LocalDate to, Pageable pageable);
   // pageable -> String sortField, String sortDirection, int size
 
-  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(
+  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateDesc(
       Long indexInfoId,
       LocalDate from,
       LocalDate to

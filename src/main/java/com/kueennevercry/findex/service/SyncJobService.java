@@ -104,8 +104,8 @@ public class SyncJobService {
     for (IndexInfo indexInfo : indexInfos) {
       try {
         List<IndexInfoApiResponse> responses = openApiClient
-            .fetchAllIndexDataByNameAndDateRange(indexInfo.getIndexName(), from.toString(),
-                to.toString());
+            .fetchAllIndexDataByNameAndDateRange(indexInfo.getIndexName(), from,
+                to);
 
         // 날짜별로 그룹화
         Map<LocalDate, List<IndexInfoApiResponse>> byDate =

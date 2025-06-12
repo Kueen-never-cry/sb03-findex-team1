@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,12 @@ public class DefaultOpenApiClient implements OpenApiClient {
 
   @Override
   public List<IndexInfoApiResponse> fetchAllIndexDataByNameAndDateRange(
-      String indexName, String beginDate, String endDate) {
+      String indexName, LocalDate beginDate, LocalDate endDate) {
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    String beginBasDt = beginDate.format(formatter);
+    String endBasDt = endDate.format(formatter);
 
     int page = 1;
     int numOfRows = 1000;
@@ -53,8 +60,8 @@ public class DefaultOpenApiClient implements OpenApiClient {
           .pageNo(page)
           .numOfRows(numOfRows)
           .idxNm(indexName)
-          .beginBasDt(beginDate)
-          .endBasDt(endDate)
+          .beginBasDt(beginBasDt)
+          .endBasDt(endBasDt)
           .build();
 
       URI uri = buildUrl(request);
