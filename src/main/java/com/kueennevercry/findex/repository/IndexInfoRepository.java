@@ -34,4 +34,10 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
 
   Optional<IndexInfo> findByIndexNameAndIndexClassification(String indexName,
       String indexClassification);
+
+  /**
+   * 전체 지수 정보 요약 목록 조회 (ID 기준 오름차순 정렬)
+   * 요약 정보용으로 ID, 지수명, 지수 분류명만 필요
+   */
+  List<IndexInfo> findAllByOrderByIdAsc();
 }
