@@ -35,11 +35,6 @@ public class IndexAutoSyncScheduler {
 
       LocalDate toDate = today;
 
-      if (fromDate.isBefore(toDate)) {
-        log.info("indexInfoId: {}는 최신 상태입니다. 연동 생략", indexInfoId);
-        continue;
-      }
-
       log.info("연동 대상: ID:{}, 지수명:{}, from:{}, to:{}",
           indexInfoId, config.getIndexInfo().getIndexName(), fromDate, toDate);
       indexSyncService.sync(indexInfoId, fromDate, toDate);
