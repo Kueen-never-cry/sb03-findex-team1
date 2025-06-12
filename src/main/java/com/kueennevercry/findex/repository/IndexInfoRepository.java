@@ -1,13 +1,16 @@
 package com.kueennevercry.findex.repository;
 
+import com.kueennevercry.findex.dto.request.IndexInfoListRequest;
 import com.kueennevercry.findex.entity.IndexInfo;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
+/**
+ * IndexInfo 엔티티에 대한 기본 Repository 인터페이스
+ * Spring Data JPA의 기본 CRUD 연산을 제공합니다.
+ */
+public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>, IndexInfoCustomRepository {
 
   /**
    * IndexInfoRepository는 JpaRepository를 상속받아 기본적인 CRUD 연산을 제공합니다.
@@ -40,4 +43,20 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long> {
    * 요약 정보용으로 ID, 지수명, 지수 분류명만 필요
    */
   List<IndexInfo> findAllByOrderByIdAsc();
+
+  /**
+   * 커서 기반 페이징으로 지수 정보 목록을 조회합니다.
+   *
+   * @param request 검색 조건 및 페이징 정보
+   * @return 조회된 지수 정보 목록 (최대 size+1개)
+   */
+  List<IndexInfo> findWithCursorPaging(IndexInfoListRequest request);
+
+  /**
+   * 필터 조건에 맞는 전체 데이터 개수를 조회합니다.
+   *
+   * @param request 검색 조건
+   * @return 조건에 맞는 전체 데이터 개수
+   */
+  Long countWithFilters(IndexInfoListRequest request);
 }
