@@ -11,4 +11,21 @@ public record CursorPageResponse<T>(
     boolean hasNext
 ) {
 
+  /**
+   * 전체 개수를 포함한 페이지 응답 생성
+   */
+  public static <T> CursorPageResponse<T> of(
+      List<T> content,
+      String nextCursor,
+      Long nextIdAfter,
+      boolean hasNext,
+      long totalElements) {
+    return new CursorPageResponse<>(
+        content,
+        nextCursor,
+        nextIdAfter,
+        content.size(),
+        totalElements,
+        hasNext);
+  }
 }

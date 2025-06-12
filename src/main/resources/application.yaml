@@ -19,6 +19,10 @@ spring:
   config:
     import: "classpath:db.yaml"
 
+batch:
+  index-sync:
+    cron: "0 0 0 * * *"
+
 springdoc:
   api-docs:
     # OpenAPI 명세서 경로(JSON) -> 기억해두자!!! 미션 때 써먹어야됨.

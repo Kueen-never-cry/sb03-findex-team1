@@ -14,15 +14,12 @@ import com.opencsv.CSVWriter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -135,7 +132,6 @@ public class IndexDataController {
   ) throws IOException {
     Sort.Direction direction = Sort.Direction.fromString(sortDirection);
     Sort sort = Sort.by(direction, sortField);
-    Pageable pageable = PageRequest.of(0, 1, sort);
 
     String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     String filename = "index-data-export-" + today + ".csv";
@@ -149,7 +145,7 @@ public class IndexDataController {
     writer.write('\uFEFF');
 
     List<String[]> csvData = indexDataService.getExportableIndexData(indexInfoId, startDate,
-        endDate, pageable);
+        endDate, sort);
 
     try (CSVWriter csvWriter = new CSVWriter(writer)) {
       csvWriter.writeAll(csvData);
