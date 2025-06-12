@@ -2,9 +2,9 @@ package com.kueennevercry.findex.repository;
 
 import com.kueennevercry.findex.dto.response.AutoSyncConfigDto;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
-import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.QAutoSyncConfig;
 import com.kueennevercry.findex.entity.QIndexInfo;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -32,23 +32,30 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
     QIndexInfo index = QIndexInfo.indexInfo;
 
     var query = queryFactory
-        .selectFrom(config)
-        .leftJoin(config.indexInfo, index).fetchJoin()
+        .select(Projections.constructor(AutoSyncConfigDto.class,
+            config.id,
+            index.id,
+            index.indexName,
+            index.indexClassification,
+            config.enabled
+        ))
+        .from(config)
+        .join(config.indexInfo, index)
         .where(
             indexInfoIdEq(indexInfoId, index),
             enabledEq(enabled, config),
-            idAfterGt(idAfter, config)
+            idAfterGt(idAfter, index)
         );
 
     if ("enabled".equals(sortField)) {
       query.orderBy("desc".equals(sortDirection) ? config.enabled.desc() : config.enabled.asc());
     } else if ("id".equals(sortField)) {
-      query.orderBy("desc".equals(sortDirection) ? config.id.desc() : config.id.asc());
+      query.orderBy("desc".equals(sortDirection) ? index.id.desc() : index.id.asc());
     } else {
       query.orderBy("desc".equals(sortDirection) ? index.indexName.desc() : index.indexName.asc());
     }
 
-    List<AutoSyncConfig> results = query
+    List<AutoSyncConfigDto> results = query
         .limit(size + 1)
         .fetch();
 
@@ -57,31 +64,18 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
       results.remove(size);
     }
 
-    List<AutoSyncConfigDto> dtoList = results.stream()
-        .map(cfg -> new AutoSyncConfigDto(
-            cfg.getId(),
-            cfg.getIndexInfo().getId(),
-            cfg.getIndexInfo().getIndexName(),
-            cfg.getIndexInfo().getIndexClassification(),
-            cfg.isEnabled()
-        ))
-        .toList();
-
-    Long nextIdAfter = dtoList.isEmpty() ? null : dtoList.get(dtoList.size() - 1).id();
+    Long nextIdAfter = results.isEmpty() ? null : results.get(results.size() - 1).indexInfoId();
 
     Long countResult = queryFactory
         .select(config.count())
         .from(config)
-        .leftJoin(config.indexInfo, index)
-        .where(
-            indexInfoIdEq(indexInfoId, index),
-            enabledEq(enabled, config)
-        )
+        .join(config.indexInfo, index)
+        .where(indexInfoIdEq(indexInfoId, index))
         .fetchOne();
 
     long totalElements = countResult != null ? countResult : 0L;
 
-    return new CursorPageResponse<>(dtoList, null, nextIdAfter, size, totalElements, hasNext);
+    return new CursorPageResponse<>(results, null, nextIdAfter, size, totalElements, hasNext);
   }
 
   private BooleanExpression indexInfoIdEq(Long indexInfoId, QIndexInfo index) {
@@ -92,7 +86,7 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
     return enabled != null ? config.enabled.eq(enabled) : null;
   }
 
-  private BooleanExpression idAfterGt(Long idAfter, QAutoSyncConfig config) {
-    return idAfter != null ? config.id.gt(idAfter) : null;
+  private BooleanExpression idAfterGt(Long idAfter, QIndexInfo index) {
+    return idAfter != null ? index.id.gt(idAfter) : null;
   }
 }
