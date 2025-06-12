@@ -11,16 +11,21 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+@Slf4j
 @Repository
 public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
 
@@ -43,20 +48,28 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
     /* 기본 필터링 */
     BooleanBuilder whereCondition = this.createFilterCondition(request);
 
-    /* 기본 sorting */
-    OrderSpecifier<?>[] primaryOrder = this.createPrimaryOrder(request.getSortField(),
-        request.getSortDirection());
+    /* 필수 쿼리 */
+    JPAQuery<IntegrationTask> query = queryFactory
+        .selectFrom(qIntegrationTask)
+        .leftJoin(qIntegrationTask.indexInfo)
+        .where(whereCondition);
 
     /* cursor 기반 데이터 */
     BooleanExpression cursorCondition = this.createCursorCondition(request);
+    if (cursorCondition != null) {
+      query.where(cursorCondition);
+    }
+
+    /* sorting */
+    OrderSpecifier<?>[] orderCondition = this.createOrderCondition(request.getSortField(),
+        request.getSortDirection());
+    if (orderCondition != null) {
+      query.orderBy(orderCondition);
+    }
 
     int pageSize = request.getSize() == null ? 10 : request.getSize();
 
-    List<IntegrationTask> integrationTaskList = queryFactory
-        .selectFrom(qIntegrationTask)
-        .leftJoin(qIntegrationTask.indexInfo)
-        .where(whereCondition, cursorCondition)
-        .orderBy(primaryOrder)
+    List<IntegrationTask> integrationTaskList = query
         .limit(pageSize)
         .fetch();
 
@@ -77,7 +90,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
       builder.and(qIntegrationTask.jobType.eq(request.getJobType()));
     }
     if (request.getWorker() != null) {
-      builder.and(qIntegrationTask.worker.eq(request.getWorker()));
+      builder.and(qIntegrationTask.worker.containsIgnoreCase(request.getWorker()));
     }
     if (request.getStatus() != null) {
       builder.and(qIntegrationTask.result.eq(request.getStatus()));
@@ -105,7 +118,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
    * 1. sortField( "jobTime", "targetDate") 와 sortDirection 으로 order를 설정한다.
    * 2.  (이후에 id값으로도 필터링하므로) id 값으로도 다시 한번 order 설정한다.
    * */
-  private OrderSpecifier<?>[] createPrimaryOrder(String sortField, String sortDirection) {
+  private OrderSpecifier<?>[] createOrderCondition(String sortField, String sortDirection) {
     if (sortField == null || sortDirection == null) {
       return null;
     }
@@ -121,9 +134,11 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
             new OrderSpecifier<>(direction, qIntegrationTask.id)};
         break;
 
-      case "targetDate":  //대상날짜
+      case
+          "targetDate":  //대상날짜 targetDate가 null 이면 가상의 값('9999-12-31')을 넣음 : null 값을 제일 아래로 빼기 위한 목적
         orderSpecifierList = new OrderSpecifier[]{
-            new OrderSpecifier<>(direction, qIntegrationTask.targetDate),
+            new OrderSpecifier<>(direction,
+                qIntegrationTask.targetDate.coalesce(LocalDate.parse("9999-12-31"))),
             new OrderSpecifier<>(direction, qIntegrationTask.id)};
         break;
       default:
@@ -154,25 +169,31 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
       //FIXME :  "jobTime" ,"targetDate" -> enum으로 변경
       case "jobTime":      //작업일시
         Instant cursorJobTime = this.stringToInstant(cursor);
-
         // cursorJobTime 값 비교 그리고 id 비교
         cursorCondition = direction == Order.ASC ?
             qIntegrationTask.jobTime.gt(cursorJobTime)
-                .and(qIntegrationTask.id.gt(request.getIdAfter()))
+                .or(qIntegrationTask.id.gt(request.getIdAfter())
+                    .and(qIntegrationTask.id.gt(idAfter)))
+
             : qIntegrationTask.jobTime.lt(cursorJobTime)
-                .and(qIntegrationTask.id.lt(request.getIdAfter()));
+                .or(qIntegrationTask.id.lt(request.getIdAfter())
+                    .and(qIntegrationTask.id.lt(idAfter)));
         break;
       case "targetDate":   //대상날짜
         LocalDate cursorTargetDate = LocalDate.parse(cursor);
         // cursorTargetDate 값 비교 그리고 id 비교
         cursorCondition = direction == Order.ASC ?
-            qIntegrationTask.targetDate.gt(cursorTargetDate)
-                .and(qIntegrationTask.id.gt(request.getIdAfter()))
-            : qIntegrationTask.targetDate.lt(cursorTargetDate)
-                .and(qIntegrationTask.id.lt(request.getIdAfter()));
+            qIntegrationTask.targetDate.isNotNull()
+                .and(qIntegrationTask.targetDate.gt(cursorTargetDate)
+                    .or(qIntegrationTask.targetDate.eq(cursorTargetDate)
+                        .and(qIntegrationTask.id.gt(idAfter))))
+            : qIntegrationTask.targetDate.isNotNull()
+                .and(qIntegrationTask.targetDate.lt(cursorTargetDate)
+                    .or(qIntegrationTask.targetDate.eq(cursorTargetDate)
+                        .and(qIntegrationTask.id.lt(idAfter))));
         break;
       default:
-        throw new IllegalStateException("Unexpected closingPrice: " + sortField);
+        throw new IllegalStateException("Unexpected sortField: " + sortField);
     }
 
     return cursorCondition;
@@ -187,21 +208,34 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
     return jobTime.toInstant(ZoneOffset.ofHours(9));
   }
 
+
   /* String -> Instant로 변경 */
   private Instant stringToInstant(String cursor) {
-    if (cursor == null) {
+    if (cursor == null || cursor.isBlank()) {
       return null;
     }
     try {
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-      LocalDateTime localDateTime = LocalDateTime.parse(cursor, formatter);
-      return localDateTime.toInstant(ZoneOffset.ofHours(9));
-    } catch (Exception e) {
-      throw new IllegalArgumentException("시간 형식이 잘못된 문자열입니다: " + cursor, e);
+      return Instant.parse(cursor);
+    } catch (DateTimeParseException e) {
+
+      try {
+        LocalDateTime local = LocalDateTime.parse(cursor,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
+        return local.atZone(ZoneId.systemDefault()).toInstant(); // 시스템 시간대 기준으로 Instant 변환
+      } catch (DateTimeParseException ex) {
+        throw new IllegalArgumentException("지원하지 않는 시간 형식입니다: " + cursor);
+      }
     }
   }
 
-  public CursorPageResponse<SyncJobDto> toCursorPageResponse(
+  private LocalDateTime instantToLocalDateTime(Instant cursor) {
+    if (cursor == null) {
+      return null;
+    }
+    return LocalDateTime.ofInstant(cursor, ZoneId.systemDefault());
+  }
+
+  private CursorPageResponse<SyncJobDto> toCursorPageResponse(
       List<IntegrationTask> integrationTaskList,
       SyncJobParameterRequest request,
       Long totalElements
@@ -215,11 +249,17 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
     if (!integrationTaskList.isEmpty()) {
       IntegrationTask last = integrationTaskList.get(integrationTaskList.size() - 1);
       nextIdAfter = last.getId();
+      nextCursor = last.getJobTime().toString(); // 기본값으로 jobTime 넘겨줌
 
-      switch (request.getSortField()) {
-        case "jobTime" -> nextCursor = last.getJobTime().toString();
-        case "targetDate" -> nextCursor = last.getTargetDate().toString();
-        default -> throw new IllegalStateException("Unexpected sort field");
+      // FIXME : 이상함, 마지막 아이템이 jobTime을 가지고 있지 않으면 null 보냄 -> 다음 페이지 없음?
+      if (request.getSortField() != null) {
+        switch (request.getSortField()) {
+          case "jobTime" ->
+              nextCursor = last.getJobTime() != null ? last.getJobTime().toString() : null;
+          case "targetDate" ->
+              nextCursor = last.getTargetDate() != null ? last.getTargetDate().toString() : null;
+          default -> throw new IllegalStateException("Unexpected sort field");
+        }
       }
     }
 
