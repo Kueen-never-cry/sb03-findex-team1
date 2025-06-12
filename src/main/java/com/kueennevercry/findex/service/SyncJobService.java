@@ -1,10 +1,10 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.CursorPageResponseSyncJobDto;
 import com.kueennevercry.findex.dto.SyncJobDto;
 import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexData;
@@ -45,7 +45,7 @@ public class SyncJobService {
 
   private String clientIp = null;
 
-  public CursorPageResponseSyncJobDto findAllByParameters(
+  public CursorPageResponse<SyncJobDto> findAllByParameters(
       SyncJobParameterRequest syncJobParameterRequest) {
     return integrationTaskRepository.findAllByParameters(syncJobParameterRequest);
   }
