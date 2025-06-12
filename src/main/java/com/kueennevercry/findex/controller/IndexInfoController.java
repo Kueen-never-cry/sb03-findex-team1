@@ -2,7 +2,9 @@ package com.kueennevercry.findex.controller;
 
 import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
 import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
+import com.kueennevercry.findex.dto.request.IndexInfoListRequest;
 import com.kueennevercry.findex.dto.response.IndexInfoDto;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
 import com.kueennevercry.findex.service.IndexInfoService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.List;
@@ -24,6 +27,47 @@ import java.util.List;
 public class IndexInfoController {
 
   private final IndexInfoService indexInfoService;
+
+  /**
+   * 지수 정보 목록 조회 (커서 기반 페이징)
+   * GET /api/index-infos
+   * 
+   * 커서 기반 페이징을 사용하여 대용량 데이터도 효율적으로 조회할 수 있습니다.
+   * 
+   * 사용 예시:
+   * 1. 첫 페이지: GET /api/index-infos?size=10
+   * 2. 다음 페이지: GET /api/index-infos?idAfter=123&size=10
+   * 3. 필터링: GET
+   * /api/index-infos?indexClassification=KOSPI지수&favorite=true&size=10
+   * 4. 정렬: GET /api/index-infos?sortField=indexName&sortDirection=desc&size=10
+   */
+  @GetMapping
+  public ResponseEntity<CursorPageResponse<IndexInfoDto>> getIndexInfoList(
+      @RequestParam(required = false) String indexClassification,
+      @RequestParam(required = false) String indexName,
+      @RequestParam(required = false) Boolean favorite,
+      @RequestParam(required = false) Long idAfter,
+      @RequestParam(required = false) String cursor,
+      @RequestParam(defaultValue = "indexClassification") String sortField,
+      @RequestParam(defaultValue = "asc") String sortDirection,
+      @RequestParam(defaultValue = "10") Integer size) {
+
+    // 요청 파라미터를 DTO로 변환
+    IndexInfoListRequest request = new IndexInfoListRequest(
+        indexClassification,
+        indexName,
+        favorite,
+        idAfter,
+        cursor,
+        sortField,
+        sortDirection,
+        size);
+
+    // 서비스 호출
+    CursorPageResponse<IndexInfoDto> response = indexInfoService.findWithCursorPaging(request);
+
+    return ResponseEntity.ok(response);
+  }
 
   /**
    * 지수 정보 요약 목록 조회 GET /api/index-infos/summaries
