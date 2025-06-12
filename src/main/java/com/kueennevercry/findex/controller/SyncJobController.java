@@ -5,6 +5,7 @@ import com.kueennevercry.findex.dto.SyncJobDto;
 import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
 import com.kueennevercry.findex.service.SyncJobService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,12 @@ public class SyncJobController {
   : Open API를 통해 지수 데이터를 연동합니다
  */
   @PostMapping("/index-data")
-  public List<SyncJobDto> syncIndexData(@RequestBody @Valid IndexDataSyncRequest request) {
-    return this.syncJobService.syncIndexData(request);
+  public List<SyncJobDto> syncIndexData(
+      @RequestBody @Valid IndexDataSyncRequest request,
+      HttpServletRequest httpServletRequest
+  ) {
+    String clientIp = getClientIp(httpServletRequest);
+    return this.syncJobService.syncIndexData(request, clientIp);
   }
 
   /*
@@ -51,4 +56,19 @@ public class SyncJobController {
         syncJobParameterRequest);
   }
 
+  private String getClientIp(HttpServletRequest request) {
+    String ip = request.getHeader("X-Forwarded-For");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip.split(",")[0];
+    }
+    ip = request.getHeader("Proxy-Client-IP");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip;
+    }
+    ip = request.getHeader("WL-Proxy-Client-IP");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip;
+    }
+    return request.getRemoteAddr();
+  }
 }
