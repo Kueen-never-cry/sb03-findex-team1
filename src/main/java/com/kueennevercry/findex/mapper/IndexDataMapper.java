@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.mapper;
 
+import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
 import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
@@ -17,6 +18,11 @@ public interface IndexDataMapper {
 
   @Mapping(source = "indexInfo.id", target = "indexInfoId")
   IndexDataDto toDto(IndexData indexData);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+  IndexInfo toEntity(IndexInfoCreateRequest request);
 
   void updateEntity(IndexInfoApiResponse response, @MappingTarget IndexData target);
 

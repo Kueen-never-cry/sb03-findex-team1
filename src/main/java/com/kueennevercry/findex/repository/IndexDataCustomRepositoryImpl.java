@@ -8,6 +8,7 @@ import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,10 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
       Long idAfter, String cursor,
       String sortField, String sortDirection, int size) {
 
-    BooleanExpression baseCondition = indexData.indexInfo.id.eq(indexInfoId);
+    BooleanExpression baseCondition =
+        indexData.indexInfo.id.eq(indexInfoId)
+            .and(indexData.baseDate.gt(from))
+            .and(indexData.baseDate.lt(to));
     BooleanExpression cursorCondition = buildCursorCondition(idAfter, sortField, sortDirection);
 
     OrderSpecifier<?> orderSpecifier = buildOrderSpecifier(sortField, sortDirection);
@@ -55,7 +59,7 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
     Long totalElements = queryFactory
         .select(indexData.count())
         .from(indexData)
-        .where(indexData.indexInfo.id.eq(indexInfoId))
+        .where(baseCondition)
         .fetchOne();
 
     return indexDataMapper.toCursorDto(
@@ -82,6 +86,10 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
         return sortDirection.equalsIgnoreCase("desc") ? indexData.baseDate.lt(
             fetchBaseDate(idAfter))
             : indexData.baseDate.gt(fetchBaseDate(idAfter));
+      case "closingPrice":
+        return sortDirection.equalsIgnoreCase("desc") ? indexData.closingPrice.lt(
+            fetchClosingPrice(idAfter))
+            : indexData.closingPrice.gt(fetchClosingPrice(idAfter));
       default:
         throw new IllegalArgumentException("Unsupported sort field: " + sortField);
     }
@@ -95,6 +103,8 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
         return dir.isAscending() ? indexData.id.asc() : indexData.id.desc();
       case "baseDate":
         return dir.isAscending() ? indexData.baseDate.asc() : indexData.baseDate.desc();
+      case "closingPrice":
+        return dir.isAscending() ? indexData.closingPrice.asc() : indexData.closingPrice.desc();
       default:
         throw new IllegalArgumentException("Unsupported sort field: " + sortField);
     }
@@ -103,6 +113,14 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
   private LocalDate fetchBaseDate(Long id) {
     return queryFactory
         .select(indexData.baseDate)
+        .from(indexData)
+        .where(indexData.id.eq(id))
+        .fetchOne();
+  }
+
+  private BigDecimal fetchClosingPrice(Long id) {
+    return queryFactory
+        .select(indexData.closingPrice)
         .from(indexData)
         .where(indexData.id.eq(id))
         .fetchOne();
