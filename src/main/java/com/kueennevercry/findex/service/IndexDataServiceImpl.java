@@ -50,8 +50,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
         .orElseThrow(() -> new IllegalArgumentException("Index Info not found"));
     LocalDate baseDate = request.baseDate();
-    if (indexDataRepository.existsByIndexInfoId(indexInfo.getId())
-        && indexDataRepository.existsByBaseDate(baseDate)) {
+    if (indexDataRepository.existsByIndexInfoIdAndBaseDate(indexInfo.getId(), baseDate)) {
       throw new IllegalStateException("ERR_BAD_REQUEST");
     }
 

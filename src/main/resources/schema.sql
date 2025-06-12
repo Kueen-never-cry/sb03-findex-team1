@@ -137,8 +137,15 @@ FROM (SELECT generate_series(DATE '2024-01-01', DATE '2025-06-30',
                                   (92),
                                   (94)) AS t(index_info_id)) AS ids;
 
+SELECT index_classification, index_name, id
+from index_info
+where index_name like '%IT%';
+
 SELECT *
-FROM index_data;
+FROM index_data
+WHERE index_info_id = 2
+  and base_date > '2025-06-01'
+  and base_date < '2025-06-30';
 
 SELECT *
 FROM integration_tasks;
