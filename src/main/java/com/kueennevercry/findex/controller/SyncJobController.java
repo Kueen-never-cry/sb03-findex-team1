@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,8 +30,9 @@ public class SyncJobController {
   : Open API를 통해 지수 정보를 연동합니다
    */
   @PostMapping("/index-infos")
-  public List<SyncJobDto> syncIndexInfo() {
-    return this.syncJobService.syncIndexInfo();
+  public ResponseEntity<List<SyncJobDto>> syncIndexInfo(HttpServletRequest request) {
+    String clientIp = this.getClientIp(request);
+    return ResponseEntity.ok(this.syncJobService.syncIndexInfo(clientIp));
   }
 
   /*
@@ -50,10 +52,27 @@ public class SyncJobController {
   연동 작업 목록 조회
   */
   @GetMapping
-  public CursorPageResponseSyncJobDto findAll(
+  public ResponseEntity<CursorPageResponseSyncJobDto> findAll(
       SyncJobParameterRequest syncJobParameterRequest) {
-    return this.syncJobService.findAllByParameters(
-        syncJobParameterRequest);
+    return ResponseEntity.ok(this.syncJobService.findAllByParameters(
+        syncJobParameterRequest));
+
+  }
+
+  private String getClientIp(HttpServletRequest request) {
+    String ip = request.getHeader("X-Forwarded-For");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip.split(",")[0];
+    }
+    ip = request.getHeader("Proxy-Client-IP");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip;
+    }
+    ip = request.getHeader("WL-Proxy-Client-IP");
+    if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+      return ip;
+    }
+    return request.getRemoteAddr();
   }
 
   private String getClientIp(HttpServletRequest request) {

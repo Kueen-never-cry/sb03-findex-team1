@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -44,40 +45,53 @@ public class SyncJobService {
 
   public CursorPageResponseSyncJobDto findAllByParameters(
       SyncJobParameterRequest syncJobParameterRequest) {
-
     return integrationTaskRepository.findAllByParameters(syncJobParameterRequest);
   }
 
-  public List<SyncJobDto> syncIndexInfo() {
-    IndexInfoApiRequest apiRequestParams = IndexInfoApiRequest.builder().numOfRows(500).pageNo(1)
-        .basDt("20250610") // 하루치 데이터를 기준으로 지수정보 카테고리화
-        .build();
-
-    // 1. 순수 openApi에서 가져온  데이터
-    List<IndexInfoApiResponse> indexDataList = openApiClient.fetchAllIndexData(apiRequestParams);
-
-    //2. indexInfo에 이미 데이터 있으면 바로 integrationTask 데이터 삽입, 없으면 indexInfo 데이터 생성 후 integrationTask 데이터 삽입
+  public List<SyncJobDto> syncIndexInfo(String clientIp) {
+    this.clientIp = clientIp;
+    // 1. openApi에서 가져온 외부 데이터
+    List<IndexInfoApiResponse> openApiDataList = this.fetchIndexInfoFromOpenApi();
     List<IntegrationTask> integrationTaskList = new ArrayList<>();
-    indexDataList.forEach(indexInfoFromApi -> {
-      Optional<IndexInfo> indexInfo = indexInfoRepository.findByIndexNameAndIndexClassification(
-          indexInfoFromApi.indexName(), indexInfoFromApi.indexClassification());
-      if (indexInfo.isPresent()) {
-        integrationTaskList.add(this.buildIntegrationTaskEntity(indexInfo.get()));
-      } else {
-        IndexInfo createdIndexInfo = this.createIndexInfo(indexInfoFromApi);
-        integrationTaskList.add(this.buildIntegrationTaskEntity(createdIndexInfo));
-      }
-    });
-    List<IntegrationTask> createdIntegrationTaskList = this.createIntegrationTasks(
-        integrationTaskList);
 
-    return createdIntegrationTaskList.stream().map(integrationTaskMapper::toSyncJobDto).toList();
+    //2. indexInfo 생성 or 조회
+    for (IndexInfoApiResponse indexInfoFromApi : openApiDataList) {
+      IndexInfo indexInfo = null;
+      try {
+        // DB에서 있는 데이터 가져와서 다르면 업데이트, 없으면 DB에 생성해서 가져옴
+        Optional<IndexInfo> optional = indexInfoRepository.findByIndexNameAndIndexClassification(
+            indexInfoFromApi.indexName(), indexInfoFromApi.indexClassification());
+        if (optional.isPresent()) {
+          indexInfo = optional.get();
+          this.updateIndexInfo(indexInfo, indexInfoFromApi);
+        } else {
+          indexInfo = this.saveIndexInfo(indexInfoFromApi);
+        }
+
+        integrationTaskList.add(
+            this.buildIntegrationTaskEntity(indexInfo, null, IntegrationJobType.INDEX_INFO,
+                IntegrationResultType.SUCCESS)
+        );
+      } catch (Exception e) {
+        // 실패해도, integration task 데이터 넣음
+        integrationTaskList.add(
+            this.buildIntegrationTaskEntity(indexInfo, null, IntegrationJobType.INDEX_INFO,
+                IntegrationResultType.FAILED)
+        );
+      }
+    }
+
+    // 3. integrationTask DB 저장
+    return this.saveIntegrationTasks(integrationTaskList)
+        .stream()
+        .map(integrationTaskMapper::toSyncJobDto)
+        .toList();
   }
 
   // 성공한 것과 실패한 것 모두 기록할 수 있게 Transactional 보단 try-catch + save 패턴으로 사용
   public List<SyncJobDto> syncIndexData(IndexDataSyncRequest request, String clientIp) {
     this.clientIp = clientIp;
-    
+
     LocalDate from = request.baseDateFrom();
     LocalDate to = request.baseDateTo();
 
@@ -136,6 +150,46 @@ public class SyncJobService {
         .toList();
   }
 
+  /*private methods*/
+
+  private void updateIndexInfo(IndexInfo existed, IndexInfoApiResponse indexInfoFromApi) {
+    boolean updated = false;
+    if (!Objects.equals(existed.getEmployedItemsCount(), indexInfoFromApi.employedItemsCount())) {
+      existed.setEmployedItemsCount(indexInfoFromApi.employedItemsCount());
+      updated = true;
+    }
+    if (!Objects.equals(existed.getBasePointInTime(), indexInfoFromApi.basePointInTime())) {
+      existed.setBasePointInTime(indexInfoFromApi.basePointInTime());
+      updated = true;
+    }
+    if (!Objects.equals(existed.getBaseIndex(), indexInfoFromApi.baseIndex())) {
+      existed.setBaseIndex(indexInfoFromApi.baseIndex());
+      updated = true;
+    }
+    if (!existed.getSourceType().equals(SourceType.OPEN_API)) {
+      existed.setSourceType(SourceType.OPEN_API);
+      updated = true;
+    }
+    if (updated) {
+      indexInfoRepository.save(existed);
+      indexInfoRepository.flush();
+    }
+  }
+
+  private List<IndexInfoApiResponse> fetchIndexInfoFromOpenApi() {
+    try {
+      IndexInfoApiRequest apiRequestParams = IndexInfoApiRequest.builder().numOfRows(500).pageNo(1)
+          .basDt("20250610") // 하루치 데이터를 기준으로 지수정보 카테고리화
+          .build();
+      return openApiClient.fetchAllIndexData(apiRequestParams);
+    } catch (Exception e) {
+      IntegrationTask createdIntegrationTask = this.buildIntegrationTaskEntity(null, null,
+          IntegrationJobType.INDEX_INFO,
+          IntegrationResultType.FAILED);
+      this.saveIntegrationTasks(List.of(createdIntegrationTask));
+      throw new RuntimeException("OPEN Api의 데이터를 가져올 수 없습니다.");
+    }
+  }
 
   private void upsertIndexData(IndexInfo indexInfo, IndexInfoApiResponse response) {
     Optional<IndexData> existing = indexDataRepository.findByIndexInfoIdAndBaseDate(
@@ -152,30 +206,6 @@ public class SyncJobService {
     }
   }
 
-  private IndexInfo createIndexInfo(IndexInfoApiResponse indexInfoFromApi) {
-    IndexInfo newIndexInfo = IndexInfo.builder()
-        .indexClassification(indexInfoFromApi.indexClassification())
-        .indexName(indexInfoFromApi.indexName())
-        .employedItemsCount(indexInfoFromApi.employedItemsCount())
-        .basePointInTime(indexInfoFromApi.basePointInTime())
-        .baseIndex(indexInfoFromApi.baseIndex()).sourceType(SourceType.OPEN_API).favorite(false)
-        .build();
-
-    return indexInfoRepository.save(newIndexInfo);
-  }
-
-  private IntegrationTask buildIntegrationTaskEntity(IndexInfo indexInfo) {
-    return IntegrationTask.builder()
-        .jobType(IntegrationJobType.INDEX_INFO)
-        .targetDate(null)
-        .worker(SourceType.OPEN_API.name())
-        .jobTime(Instant.now())
-        .result(IntegrationResultType.SUCCESS)  // TODO : success를 default로 두는게 맞나? -> 추후 수정
-        .indexInfo(indexInfo)
-        .build();
-  }
-
-  // TODO : 가능하면 지수 정보, 지수 데이터 통합하여 사용
   private IntegrationTask buildIntegrationTaskEntity(
       IndexInfo indexInfo,
       LocalDate date,
@@ -192,7 +222,19 @@ public class SyncJobService {
         .build();
   }
 
-  private List<IntegrationTask> createIntegrationTasks(List<IntegrationTask> integrationTaskList) {
-    return integrationTaskRepository.saveAll(integrationTaskList);
+  private IndexInfo saveIndexInfo(IndexInfoApiResponse indexInfoFromApi) {
+    IndexInfo newIndexInfo = IndexInfo.builder()
+        .indexClassification(indexInfoFromApi.indexClassification())
+        .indexName(indexInfoFromApi.indexName())
+        .employedItemsCount(indexInfoFromApi.employedItemsCount())
+        .basePointInTime(indexInfoFromApi.basePointInTime())
+        .baseIndex(indexInfoFromApi.baseIndex()).sourceType(SourceType.OPEN_API).favorite(false)
+        .build();
+
+    return indexInfoRepository.save(newIndexInfo);
+  }
+
+  private List<IntegrationTask> saveIntegrationTasks(List<IntegrationTask> integrationTaskList) {
+    return integrationTaskRepository.saveAllAndFlush(integrationTaskList);
   }
 }
