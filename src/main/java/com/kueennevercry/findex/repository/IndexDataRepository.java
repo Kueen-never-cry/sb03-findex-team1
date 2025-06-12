@@ -19,7 +19,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long> {
   List<IndexData> findAllByIndexInfo_IdAndBaseDateBetween(Long indexInfoId, LocalDate from,
       LocalDate to, Sort sort);
 
-  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateAsc(
+  List<IndexData> findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateDesc(
       Long indexInfoId,
       LocalDate from,
       LocalDate to
