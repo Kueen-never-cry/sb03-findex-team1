@@ -18,6 +18,11 @@ public interface IndexDataMapper {
   @Mapping(source = "indexInfo.id", target = "indexInfoId")
   IndexDataDto toDto(IndexData indexData);
 
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "indexInfo", ignore = true)
+  @Mapping(target = "sourceType", ignore = true)
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
   void updateEntity(IndexInfoApiResponse response, @MappingTarget IndexData target);
 
   @Mapping(source = "response.baseDate", target = "baseDate")
@@ -39,8 +44,7 @@ public interface IndexDataMapper {
       Long nextIdAfter,
       int size,
       Long totalElements,
-      boolean hasNext
-  ) {
+      boolean hasNext) {
     return new CursorPageResponse<>(
         content,
         nextCursor,
