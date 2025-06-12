@@ -17,6 +17,6 @@ public class RealIndexSyncService implements IndexSyncService {
   @Override
   public void sync(Long indexInfoId, LocalDate from, LocalDate to) {
     IndexDataSyncRequest request = new IndexDataSyncRequest(List.of(indexInfoId), from, to);
-    syncJobService.syncIndexData(request);
+    syncJobService.syncIndexData(request, "SYSTEM");
   }
 }
