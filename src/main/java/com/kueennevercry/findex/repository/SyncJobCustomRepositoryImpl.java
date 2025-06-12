@@ -1,9 +1,9 @@
 package com.kueennevercry.findex.repository;
 
 
-import com.kueennevercry.findex.dto.CursorPageResponseSyncJobDto;
 import com.kueennevercry.findex.dto.SyncJobDto;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.entity.IntegrationTask;
 import com.kueennevercry.findex.entity.QIntegrationTask;
 import com.kueennevercry.findex.mapper.IntegrationTaskMapper;
@@ -37,7 +37,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
   }
 
   @Override
-  public CursorPageResponseSyncJobDto findAllByParameters(
+  public CursorPageResponse<SyncJobDto> findAllByParameters(
       SyncJobParameterRequest request) {
 
     /* 기본 필터링 */
@@ -60,14 +60,13 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
         .limit(pageSize)
         .fetch();
 
-    /*  CursorPageResponseSyncJobDto 타입으로 변환 */
     Long totalElements = queryFactory
         .select(qIntegrationTask.count())
         .from(qIntegrationTask)
         .where(whereCondition) // cursorCondition 제외
         .fetchOne();
 
-    return this.toCursorPageResponseSyncJobDto(integrationTaskList, request, totalElements);
+    return this.toCursorPageResponse(integrationTaskList, request, totalElements);
   }
 
 
@@ -202,8 +201,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
     }
   }
 
-  // TODO: 이 메소드가 여기 있는게 맞는지 의문
-  public CursorPageResponseSyncJobDto toCursorPageResponseSyncJobDto(
+  public CursorPageResponse<SyncJobDto> toCursorPageResponse(
       List<IntegrationTask> integrationTaskList,
       SyncJobParameterRequest request,
       Long totalElements
@@ -227,7 +225,7 @@ public class SyncJobCustomRepositoryImpl implements SyncJobCustomRepository {
 
     boolean hasNext = integrationTaskList.size() == request.getSize();
 
-    return new CursorPageResponseSyncJobDto(
+    return new CursorPageResponse<>(
         syncJobDtoList,
         nextCursor,
         nextIdAfter,

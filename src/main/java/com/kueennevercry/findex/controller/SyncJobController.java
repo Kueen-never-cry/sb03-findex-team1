@@ -1,9 +1,9 @@
 package com.kueennevercry.findex.controller;
 
-import com.kueennevercry.findex.dto.CursorPageResponseSyncJobDto;
 import com.kueennevercry.findex.dto.SyncJobDto;
 import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.service.SyncJobService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -48,7 +48,7 @@ public class SyncJobController {
   연동 작업 목록 조회
   */
   @GetMapping
-  public ResponseEntity<CursorPageResponseSyncJobDto> findAll(
+  public ResponseEntity<CursorPageResponse<SyncJobDto>> findAll(
       SyncJobParameterRequest syncJobParameterRequest) {
     return ResponseEntity.ok(this.syncJobService.findAllByParameters(
         syncJobParameterRequest));
