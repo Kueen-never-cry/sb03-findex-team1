@@ -4,6 +4,7 @@ import com.kueennevercry.findex.dto.ChartDataPoint;
 import com.kueennevercry.findex.dto.PeriodType;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.kueennevercry.findex.entity.IndexInfo;
 import java.util.List;
 
 @Schema(description = "지수 차트 응답 DTO")
@@ -31,4 +32,21 @@ public record IndexChartDto(
     List<ChartDataPoint> ma20DataPoints
 ) {
 
+  public static IndexChartDto from(
+      IndexInfo indexInfo,
+      PeriodType periodType,
+      List<ChartDataPoint> dataPoints,
+      List<ChartDataPoint> ma5DataPoints,
+      List<ChartDataPoint> ma20DataPoints
+  ) {
+    return new IndexChartDto(
+        indexInfo.getId(),
+        indexInfo.getIndexClassification(),
+        indexInfo.getIndexName(),
+        periodType,
+        dataPoints,
+        ma5DataPoints,
+        ma20DataPoints
+    );
+  }
 }
