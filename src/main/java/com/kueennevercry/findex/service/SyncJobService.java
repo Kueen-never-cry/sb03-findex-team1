@@ -6,6 +6,7 @@ import com.kueennevercry.findex.dto.request.IndexDataSyncRequest;
 import com.kueennevercry.findex.dto.request.IndexInfoApiRequest;
 import com.kueennevercry.findex.dto.request.SyncJobParameterRequest;
 import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
+import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexData;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.entity.IntegrationJobType;
@@ -15,6 +16,7 @@ import com.kueennevercry.findex.entity.SourceType;
 import com.kueennevercry.findex.infra.openapi.OpenApiClient;
 import com.kueennevercry.findex.mapper.IndexDataMapper;
 import com.kueennevercry.findex.mapper.IntegrationTaskMapper;
+import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
 import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.IndexInfoRepository;
 import com.kueennevercry.findex.repository.IntegrationTaskRepository;
@@ -38,7 +40,7 @@ public class SyncJobService {
   private final IndexDataRepository indexDataRepository;
   private final IntegrationTaskMapper integrationTaskMapper;
   private final OpenApiClient openApiClient;
-
+  private final AutoSyncConfigRepository autoSyncConfigRepository;
   private final IndexDataMapper indexDataMapper;
 
   private String clientIp = null;
@@ -64,6 +66,12 @@ public class SyncJobService {
         if (optional.isPresent()) {
           indexInfo = optional.get();
           this.updateIndexInfo(indexInfo, indexInfoFromApi);
+
+          // 연동 버튼 시 반영
+          if (!autoSyncConfigRepository.existsByIndexInfo_Id(indexInfo.getId())) {
+            autoSyncConfigRepository.save(new AutoSyncConfig(indexInfo));
+          }
+
         } else {
           indexInfo = this.saveIndexInfo(indexInfoFromApi);
         }
@@ -231,7 +239,11 @@ public class SyncJobService {
         .baseIndex(indexInfoFromApi.baseIndex()).sourceType(SourceType.OPEN_API).favorite(false)
         .build();
 
-    return indexInfoRepository.save(newIndexInfo);
+    IndexInfo saved = indexInfoRepository.save(newIndexInfo);
+
+    autoSyncConfigRepository.save(new AutoSyncConfig(saved));
+
+    return saved;
   }
 
   private List<IntegrationTask> saveIntegrationTasks(List<IntegrationTask> integrationTaskList) {

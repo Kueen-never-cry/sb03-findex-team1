@@ -1,21 +1,22 @@
 package com.kueennevercry.findex.service;
 
-import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
-import com.kueennevercry.findex.dto.response.IndexInfoDto;
-import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
-import com.kueennevercry.findex.dto.request.IndexInfoListRequest;
-import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.IndexInfoSummaryDto;
+import com.kueennevercry.findex.dto.request.IndexInfoCreateRequest;
+import com.kueennevercry.findex.dto.request.IndexInfoListRequest;
+import com.kueennevercry.findex.dto.request.IndexInfoUpdateRequest;
+import com.kueennevercry.findex.dto.response.CursorPageResponse;
+import com.kueennevercry.findex.dto.response.IndexInfoDto;
+import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.entity.IndexInfo;
 import com.kueennevercry.findex.mapper.IndexInfoMapper;
-import com.kueennevercry.findex.repository.IndexInfoRepository;
-import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
+import com.kueennevercry.findex.repository.IndexDataRepository;
+import com.kueennevercry.findex.repository.IndexInfoRepository;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +38,7 @@ public class IndexInfoService {
   }
 
   /**
-   * 전체 지수 정보 요약 목록 조회
-   * ID, 지수명, 지수 분류명만 포함한 간단한 목록을 반환
+   * 전체 지수 정보 요약 목록 조회 ID, 지수명, 지수 분류명만 포함한 간단한 목록을 반환
    */
   public List<IndexInfoSummaryDto> findAllSummaries() {
     List<IndexInfo> indexInfos = indexInfoRepository.findAllByOrderByIdAsc();
@@ -49,17 +49,11 @@ public class IndexInfoService {
 
   /**
    * 커서 기반 페이징으로 지수 정보 목록 조회
-   * 
-   * 커서 기반 페이징의 장점:
-   * 1. 대용량 데이터에서 일관된 성능 (OFFSET 없이 WHERE 조건만 사용)
-   * 2. 실시간 데이터 변경에도 안정적 (중복/누락 방지)
-   * 3. 무한 스크롤 UI에 최적화
-   * 
-   * 동작 과정:
-   * 1. 요청 파라미터 검증 및 기본값 적용
-   * 2. Repository에서 size+1개 데이터 조회
-   * 3. 다음 페이지 존재 여부 판단
-   * 4. 다음 커서 정보 생성
+   * <p>
+   * 커서 기반 페이징의 장점: 1. 대용량 데이터에서 일관된 성능 (OFFSET 없이 WHERE 조건만 사용) 2. 실시간 데이터 변경에도 안정적 (중복/누락 방지) 3.
+   * 무한 스크롤 UI에 최적화
+   * <p>
+   * 동작 과정: 1. 요청 파라미터 검증 및 기본값 적용 2. Repository에서 size+1개 데이터 조회 3. 다음 페이지 존재 여부 판단 4. 다음 커서 정보 생성
    * 5. 응답 DTO 구성
    */
   public CursorPageResponse<IndexInfoDto> findWithCursorPaging(IndexInfoListRequest request) {
@@ -122,12 +116,11 @@ public class IndexInfoService {
 
   /**
    * 다음 페이지를 위한 커서 생성
-   * 
-   * 현재는 단순 ID 기반이지만, 복합 정렬이 필요한 경우
-   * Base64로 인코딩된 복합 커서를 생성할 수 있습니다.
-   * 
-   * 예: {"sortField": "indexName", "sortValue": "IT서비스", "id": 123}
-   * -> Base64 인코딩 -> "eyJzb3J0RmllbGQiOi..."
+   * <p>
+   * 현재는 단순 ID 기반이지만, 복합 정렬이 필요한 경우 Base64로 인코딩된 복합 커서를 생성할 수 있습니다.
+   * <p>
+   * 예: {"sortField": "indexName", "sortValue": "IT서비스", "id": 123} -> Base64 인코딩 ->
+   * "eyJzb3J0RmllbGQiOi..."
    */
   private String generateCursor(IndexInfo lastItem, IndexInfoListRequest request) {
     // 현재는 단순 구현 (ID만 사용)
@@ -157,22 +150,20 @@ public class IndexInfoService {
 
     IndexInfo savedIndexInfo = indexInfoRepository.save(indexInfo);
 
+    // 자동 연동 설정 등록
+    autoSyncConfigRepository.save(new AutoSyncConfig(savedIndexInfo));
+
     return indexInfoMapper.toDto(savedIndexInfo);
   }
 
   /**
    * 지수 정보 수정
-   *
-   * JPA 더티 체킹(Dirty Checking) 활용
-   * - findById()로 조회한 엔티티는 영속성 컨텍스트에서 관리됨
-   * - 엔티티 필드 변경 시 JPA가 자동으로 변경사항을 감지
-   * - @Transactional 메서드 종료 시점에 자동으로 UPDATE 쿼리 실행
-   * - 따라서 repository.save() 호출이 불필요함
-   *
-   * 주의사항:
-   * - @Transactional 어노테이션이 반드시 필요
-   * - findById()로 조회한 영속 상태의 엔티티여야 함
-   * - 변경된 필드만 UPDATE 쿼리에 포함되어 성능상 유리
+   * <p>
+   * JPA 더티 체킹(Dirty Checking) 활용 - findById()로 조회한 엔티티는 영속성 컨텍스트에서 관리됨 - 엔티티 필드 변경 시 JPA가 자동으로
+   * 변경사항을 감지 - @Transactional 메서드 종료 시점에 자동으로 UPDATE 쿼리 실행 - 따라서 repository.save() 호출이 불필요함
+   * <p>
+   * 주의사항: - @Transactional 어노테이션이 반드시 필요 - findById()로 조회한 영속 상태의 엔티티여야 함 - 변경된 필드만 UPDATE 쿼리에 포함되어
+   * 성능상 유리
    */
   @Transactional // 오버라이드: readOnly = false
   public IndexInfoDto update(Long id, IndexInfoUpdateRequest request) {
@@ -202,13 +193,10 @@ public class IndexInfoService {
 
   /**
    * 지수 정보 삭제
-   * 
-   * 삭제 순서:
-   * 1. 지수 정보 존재 여부 확인
-   * 2. 연관된 지수 데이터(IndexData) 삭제
-   * 3. 연관된 자동 연동 설정(AutoSyncConfig) 삭제
-   * 4. 지수 정보(IndexInfo) 삭제
-   * 
+   * <p>
+   * 삭제 순서: 1. 지수 정보 존재 여부 확인 2. 연관된 지수 데이터(IndexData) 삭제 3. 연관된 자동 연동 설정(AutoSyncConfig) 삭제 4. 지수
+   * 정보(IndexInfo) 삭제
+   *
    * @Transactional을 통해 모든 삭제 작업이 원자적으로 실행됨
    */
   @Transactional // 오버라이드: readOnly = false
