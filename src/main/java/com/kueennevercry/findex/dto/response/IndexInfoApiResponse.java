@@ -2,6 +2,7 @@ package com.kueennevercry.findex.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -30,54 +31,70 @@ import java.time.LocalDate;
       "basIdx": "1000"
     }
 * */
+@Schema(description = "공공 OpenAPI 지수 응답 DTO")
 public record IndexInfoApiResponse
     (
         // 지수 정보
+        @Schema(description = "지수 분류", example = "KOSPI시리즈")
         @JsonProperty("idxCsf")
         String indexClassification,  // 지수 분류
 
+        @Schema(description = "지수명", example = "IT 서비스")
         @JsonProperty("idxNm")
         String indexName,  // 지수명
 
+        @Schema(description = "채용 종목 수", example = "26")
         @JsonProperty("epyItmsCnt")
         int employedItemsCount,  // 채용 종목 수
 
+        @Schema(description = "기준 시점", example = "20240701")
         @JsonProperty("basPntm")
         @JsonFormat(pattern = "yyyyMMdd")
         LocalDate basePointInTime,  // 기준 시점
 
+        @Schema(description = "기준 지수", example = "1000")
         @JsonProperty("basIdx")
         BigDecimal baseIndex,  // 기준 지수
 
         //지수 데이터 정보
+        @Schema(description = "기준일자", example = "20250609")
         @JsonProperty("basDt")
         @JsonFormat(pattern = "yyyyMMdd")
         LocalDate baseDate,  // 기준일자
 
+        @Schema(description = "종가", example = "1135.98")
         @JsonProperty("clpr")
         BigDecimal closingPrice,  // 종가
 
+        @Schema(description = "전일 대비 등락", example = "53.19")
         @JsonProperty("vs")
         BigDecimal versus,  // 전일 대비 등락
 
+        @Schema(description = "등락률 (%)", example = "4.91")
         @JsonProperty("fltRt")
         BigDecimal fluctuationRate,  // 전일 대비 등락률 (%)
 
+        @Schema(description = "시가", example = "1097.63")
         @JsonProperty("mkp")
         BigDecimal marketPrice,  // 시가
 
+        @Schema(description = "고가", example = "1137.77")
         @JsonProperty("hipr")
         BigDecimal highPrice,  // 고가
 
+        @Schema(description = "저가", example = "1096.96")
         @JsonProperty("lopr")
         BigDecimal lowPrice,  // 저가
 
+        @Schema(description = "거래량", example = "22556897")
         @JsonProperty("trqu")
         Long tradingQuantity,  // 거래량
 
+        @Schema(description = "거래대금", example = "1133714965954")
         @JsonProperty("trPrc")
         Long tradingPrice,  // 거래대금
 
+        @Schema(description = "상장 시가총액", example = "111236334273686")
         @JsonProperty("lstgMrktTotAmt")
         Long marketTotalAmount,  // 상장 시가총액
 
