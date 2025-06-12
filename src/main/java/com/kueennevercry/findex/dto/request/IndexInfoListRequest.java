@@ -17,13 +17,16 @@ public record IndexInfoListRequest(
 
   /**
    * 정렬 필드 검증
+   * 
+   * 허용되는 정렬 필드:
+   * - "indexClassification": 지수 분류명 기준 정렬
+   * - "indexName": 지수명 기준 정렬
    */
   public boolean isValidSortField() {
     if (sortField == null)
       return true;
     return sortField.equals("indexClassification") ||
-        sortField.equals("indexName") ||
-        sortField.equals("employedItemsCount");
+        sortField.equals("indexName");
   }
 
   /**
