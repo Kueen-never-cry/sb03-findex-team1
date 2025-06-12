@@ -19,12 +19,14 @@ import com.kueennevercry.findex.repository.IndexInfoRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.IntStream;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -41,6 +43,9 @@ public class IndexDataServiceImpl implements IndexDataService {
   private final IndexDataRepository indexDataRepository;
   private final IndexDataCustomRepository indexDataCustomRepository;
   private final IndexDataMapper indexDataMapper;
+
+  private static final int MA5DATA_NUM = 5;
+  private static final int MA20DATA_NUM = 20;
 
   //------------지수 데이터-----------//
   @Override
@@ -112,101 +117,91 @@ public class IndexDataServiceImpl implements IndexDataService {
 
   //------------ 대시보드 -----------//
   @Override
+  @Transactional(readOnly = true)
   public IndexChartDto getChart(Long indexInfoId, PeriodType periodType) {
+    // 1. 지수 정보 로드
     IndexInfo indexInfo = indexInfoRepository.findById(indexInfoId)
-        .orElseThrow(() -> new IllegalStateException("지수 정보가 없습니다."));
+        .orElseThrow(() -> new NoSuchElementException("지수 정보를 찾을 수 없습니다."));
 
-    LocalDate endDate = indexDataRepository.findMaxBaseDateByIndexInfoId(indexInfoId)
-        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    // 2. 날짜 범위 계산
+    LocalDate endDate = LocalDate.now();
     LocalDate startDate = calculateStartDate(endDate, periodType);
 
-    List<IndexData> indexDataList = indexDataRepository
-        .findAllByIndexInfo_IdAndBaseDateBetweenOrderByBaseDateDesc(indexInfoId, startDate,
-            endDate);
+    // 3. 데이터 조회 (baseDate 오름차순 정렬)
+    List<IndexData> indexDataList = indexDataRepository.findAllByIndexInfo_IdAndBaseDateBetween(
+        indexInfoId, startDate, endDate, Sort.by(Sort.Direction.ASC, "baseDate"));
 
-    List<ChartDataPoint> points = indexDataList.stream()
-        .map(d -> new ChartDataPoint(d.getBaseDate(), d.getClosingPrice()))
+    // 4. ChartDataPoint 변환
+    List<ChartDataPoint> pricePoints = indexDataList.stream()
+        .map(data -> new ChartDataPoint(
+            data.getBaseDate(),
+            data.getClosingPrice()
+        ))
         .toList();
 
-    return new IndexChartDto(
-        indexInfoId,
-        indexInfo.getIndexClassification(),
-        indexInfo.getIndexName(),
-        periodType,
-        points,
-        calculateMovingAverage(points, 5),
-        calculateMovingAverage(points, 20)
-    );
+    // 5. 이동 평균선 계산
+    List<ChartDataPoint> ma5 = calculateMovingAverageStrict(pricePoints, MA5DATA_NUM);
+    List<ChartDataPoint> ma20 = calculateMovingAverageStrict(pricePoints, MA20DATA_NUM);
+
+    // 6. DTO 응답 생성
+    return IndexChartDto.from(indexInfo, periodType, pricePoints, ma5, ma20);
   }
 
   @Override
-  public List<RankedIndexPerformanceDto> getPerformanceRanking(
-      Long indexInfoId,
-      PeriodType periodType,
-      int limit
-  ) {
-    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
-        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
-    LocalDate beforeBaseDate = calculateStartDate(baseDate, periodType);
+  @Transactional(readOnly = true)
+  public List<RankedIndexPerformanceDto> getPerformanceRanking(Long indexInfoId,
+      PeriodType period, int limit) {
 
-    List<RankedIndexPerformanceDto> raw = indexDataRepository.findRankedPerformances(
-        baseDate, beforeBaseDate, indexInfoId
-    );
+    LocalDate baseDate = calculateStartDate(period);
 
-    List<RankedIndexPerformanceDto> sorted = raw.stream()
-        .sorted(Comparator.comparing(
-            (RankedIndexPerformanceDto dto) -> dto.performance().fluctuationRate()).reversed())
+    List<IndexInfo> targetInfos = (indexInfoId != null)
+        ? indexInfoRepository.findAllById(List.of(indexInfoId))
+        : indexInfoRepository.findAll();
+
+    List<IndexPerformanceDto> sortedList = targetInfos.stream()
+        .map(info -> {
+          IndexData current = indexDataRepository.findTopByIndexInfoIdOrderByBaseDateDesc(
+              info.getId()).orElse(null);
+
+          IndexData before = indexDataRepository
+              .findByIndexInfoIdAndBaseDateOnlyDateMatch(info.getId(), baseDate)
+              .orElse(null);
+
+          return IndexPerformanceDto.of(info, current, before);
+        })
+        .filter(dto -> dto != null && dto.fluctuationRate() != null)
+        .sorted(Comparator.comparing(IndexPerformanceDto::fluctuationRate).reversed())
         .limit(limit)
         .toList();
 
-    return IntStream.range(0, sorted.size())
-        .mapToObj(i -> new RankedIndexPerformanceDto(i + 1, sorted.get(i).performance()))
-        .toList();
+    List<RankedIndexPerformanceDto> rankedList = new ArrayList<>();
+    for (int i = 0; i < sortedList.size(); i++) {
+      rankedList.add(new RankedIndexPerformanceDto(i + 1, sortedList.get(i)));
+    }
+
+    return rankedList;
   }
 
   @Override
-  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType periodType) {
+  @Transactional(readOnly = true)
+  public List<IndexPerformanceDto> getFavoritePerformances(PeriodType period) {
     List<IndexInfo> favorites = indexInfoRepository.findAllByFavoriteTrue();
 
-    LocalDate baseDate = indexDataRepository.findMaxBaseDate()
-        .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
+    return favorites.stream()
+        .map(indexInfo -> {
 
-    LocalDate compareDate = calculateStartDate(baseDate, periodType);
+          IndexData current = indexDataRepository.findTopByIndexInfoIdOrderByBaseDateDesc(
+              indexInfo.getId()).orElse(null);
 
-    List<IndexPerformanceDto> results = new ArrayList<>();
+          IndexData past = indexDataRepository.findByIndexInfoIdAndBaseDateOnlyDateMatch(
+                  indexInfo.getId(),
+                  calculateStartDate(period))
+              .orElse(null);
 
-    for (IndexInfo index : favorites) {
-      Optional<IndexData> currentData = indexDataRepository
-          .findByIndexInfoIdAndBaseDate(index.getId(), baseDate);
-      Optional<IndexData> previousData = indexDataRepository
-          .findClosestBeforeOrEqual(index.getId(), compareDate);
-
-      if (currentData.isEmpty() || previousData.isEmpty()) {
-        continue;
-      }
-
-      IndexData current = currentData.get();
-      IndexData previous = previousData.get();
-
-      BigDecimal currentPrice = current.getClosingPrice();
-      BigDecimal beforePrice = previous.getClosingPrice();
-      BigDecimal versus = currentPrice.subtract(beforePrice);
-      BigDecimal fluctuationRate = beforePrice.compareTo(BigDecimal.ZERO) == 0
-          ? BigDecimal.ZERO
-          : versus.divide(beforePrice, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-
-      results.add(new IndexPerformanceDto(
-          index.getId(),
-          index.getIndexClassification(),
-          index.getIndexName(),
-          versus,
-          fluctuationRate,
-          currentPrice,
-          beforePrice
-      ));
-    }
-
-    return results;
+          return IndexPerformanceDto.of(indexInfo, current, past);
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -255,21 +250,37 @@ public class IndexDataServiceImpl implements IndexDataService {
     return rows;
   }
 
-  private List<ChartDataPoint> calculateMovingAverage(List<ChartDataPoint> points, int windowSize) {
+  private List<ChartDataPoint> calculateMovingAverageStrict(List<ChartDataPoint> prices,
+      int window) {
+    List<ChartDataPoint> sorted = prices.stream()
+        .sorted(Comparator.comparing(ChartDataPoint::date))
+        .toList();
+
+    Deque<BigDecimal> windowValues = new ArrayDeque<>(window);
+    BigDecimal sum = BigDecimal.ZERO;
     List<ChartDataPoint> result = new ArrayList<>();
 
-    for (int i = 0; i <= points.size() - windowSize; i++) {
-      BigDecimal sum = BigDecimal.ZERO;
+    for (ChartDataPoint point : sorted) {
+      BigDecimal value = point.value();
+      windowValues.addLast(value);
+      sum = sum.add(value);
 
-      for (int j = 0; j < windowSize; j++) {
-        sum = sum.add(points.get(i + j).value());
+      if (windowValues.size() > window) {
+        sum = sum.subtract(windowValues.removeFirst());
       }
 
-      BigDecimal average = sum.divide(BigDecimal.valueOf(windowSize), 4, RoundingMode.HALF_UP);
-      result.add(new ChartDataPoint(points.get(i).date(), average));
+      BigDecimal avg = (windowValues.size() == window)
+          ? sum.divide(BigDecimal.valueOf(window), 2, RoundingMode.HALF_UP)
+          : null;
+
+      result.add(new ChartDataPoint(point.date(), avg));
     }
 
     return result;
+  }
+
+  private LocalDate calculateStartDate(PeriodType type) {
+    return calculateStartDate(LocalDate.now(), type);
   }
 
   private LocalDate calculateStartDate(LocalDate baseDate, PeriodType type) {
