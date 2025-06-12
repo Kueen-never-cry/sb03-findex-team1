@@ -1,11 +1,11 @@
 spring:
   application:
     name: findex
-  #  datasource:
-  #    url: jdbc:postgresql://localhost:5432/findex
-  #    username: postgres
-  #    password: 1234
-  #    driver-class-name: org.postgresql.Driver
+  datasource:
+    url: ${DB_URL}
+    username: ${USER_NAME}
+    password: ${PASSWORD}
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,7 +17,7 @@ spring:
 
   # DB config
   config:
-    import: "classpath:db.yaml"
+    import: "optional:classpath:db.yaml"
 
 batch:
   index-sync:
