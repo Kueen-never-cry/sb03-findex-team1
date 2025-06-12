@@ -68,12 +68,14 @@ public class SyncJobService {
         }
 
         integrationTaskList.add(
-            this.buildIntegrationTaskEntity(indexInfo, IntegrationResultType.SUCCESS)
+            this.buildIntegrationTaskEntity(indexInfo, null, IntegrationJobType.INDEX_INFO,
+                IntegrationResultType.SUCCESS)
         );
       } catch (Exception e) {
         // 실패해도, integration task 데이터 넣음
         integrationTaskList.add(
-            this.buildIntegrationTaskEntity(indexInfo, IntegrationResultType.FAILED)
+            this.buildIntegrationTaskEntity(indexInfo, null, IntegrationJobType.INDEX_INFO,
+                IntegrationResultType.FAILED)
         );
       }
     }
@@ -180,23 +182,12 @@ public class SyncJobService {
           .build();
       return openApiClient.fetchAllIndexData(apiRequestParams);
     } catch (Exception e) {
-      IntegrationTask createdIntegrationTask = this.buildIntegrationTaskEntity(null,
+      IntegrationTask createdIntegrationTask = this.buildIntegrationTaskEntity(null, null,
+          IntegrationJobType.INDEX_INFO,
           IntegrationResultType.FAILED);
       this.saveIntegrationTasks(List.of(createdIntegrationTask));
       throw new RuntimeException("OPEN Api의 데이터를 가져올 수 없습니다.");
     }
-  }
-
-  private IntegrationTask buildIntegrationTaskEntity(IndexInfo indexInfo,
-      IntegrationResultType resultType) {
-    return IntegrationTask.builder()
-        .jobType(IntegrationJobType.INDEX_INFO)
-        .targetDate(null)
-        .worker(this.clientIp == null ? "SYSTEM" : this.clientIp)
-        .jobTime(Instant.now())
-        .result(resultType)
-        .indexInfo(indexInfo)
-        .build();
   }
 
   private void upsertIndexData(IndexInfo indexInfo, IndexInfoApiResponse response) {
@@ -214,18 +205,6 @@ public class SyncJobService {
     }
   }
 
-  private IntegrationTask buildIntegrationTaskEntity(IndexInfo indexInfo) {
-    return IntegrationTask.builder()
-        .jobType(IntegrationJobType.INDEX_INFO)
-        .targetDate(null)
-        .worker(SourceType.OPEN_API.name())
-        .jobTime(Instant.now())
-        .result(IntegrationResultType.SUCCESS)  // TODO : success를 default로 두는게 맞나? -> 추후 수정
-        .indexInfo(indexInfo)
-        .build();
-  }
-
-  // TODO : 가능하면 지수 정보, 지수 데이터 통합하여 사용
   private IntegrationTask buildIntegrationTaskEntity(
       IndexInfo indexInfo,
       LocalDate date,
@@ -235,7 +214,7 @@ public class SyncJobService {
     return IntegrationTask.builder()
         .jobType(type)
         .targetDate(date)
-        .worker(SourceType.OPEN_API.name())
+        .worker(this.clientIp == null ? "SYSTEM" : this.clientIp)
         .jobTime(Instant.now())
         .result(result)
         .indexInfo(indexInfo)
