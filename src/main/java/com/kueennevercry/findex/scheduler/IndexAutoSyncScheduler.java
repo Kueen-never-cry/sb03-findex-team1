@@ -2,6 +2,7 @@ package com.kueennevercry.findex.scheduler;
 
 import com.kueennevercry.findex.entity.AutoSyncConfig;
 import com.kueennevercry.findex.repository.AutoSyncConfigRepository;
+import com.kueennevercry.findex.repository.IndexDataRepository;
 import com.kueennevercry.findex.service.IndexSyncService;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,19 +18,30 @@ public class IndexAutoSyncScheduler {
 
   private final AutoSyncConfigRepository autoSyncConfigRepository;
   private final IndexSyncService indexSyncService;
+  private final IndexDataRepository indexDataRepository;
 
   @Scheduled(cron = "${batch.index-sync.cron:0 0 0 * * *}")
   public void syncAllEnabledIndices() {
     log.info("[배치 시작] 자동 연동 설정된 지수 목록 연동");
 
     List<AutoSyncConfig> configs = autoSyncConfigRepository.findAllByEnabledTrue();
+    LocalDate today = LocalDate.now();
 
     for (AutoSyncConfig config : configs) {
       Long indexInfoId = config.getIndexInfo().getId();
-      LocalDate fromDate = null;
-      LocalDate toDate = LocalDate.now();
 
-      log.info("연동 대상: indexInfoId:{}, from:{}, to:{}", indexInfoId, fromDate, toDate);
+      LocalDate fromDate = indexDataRepository.findMaxBaseDateByIndexInfoId(indexInfoId)
+          .orElse(today.minusDays(7));
+
+      LocalDate toDate = today;
+
+      if (fromDate.isBefore(toDate)) {
+        log.info("indexInfoId: {}는 최신 상태입니다. 연동 생략", indexInfoId);
+        continue;
+      }
+
+      log.info("연동 대상: ID:{}, 지수명:{}, from:{}, to:{}",
+          indexInfoId, config.getIndexInfo().getIndexName(), fromDate, toDate);
       indexSyncService.sync(indexInfoId, fromDate, toDate);
     }
     log.info("[배치 종료] 자동 연동 완료");
