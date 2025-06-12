@@ -116,7 +116,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     IndexInfo indexInfo = indexInfoRepository.findById(indexInfoId)
         .orElseThrow(() -> new IllegalStateException("지수 정보가 없습니다."));
 
-    LocalDate endDate = indexDataRepository.findLatestBaseDateByIndexInfoId(indexInfoId)
+    LocalDate endDate = indexDataRepository.findMaxBaseDateByIndexInfoId(indexInfoId)
         .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
     LocalDate startDate = calculateStartDate(endDate, periodType);
 
@@ -218,7 +218,7 @@ public class IndexDataServiceImpl implements IndexDataService {
     }
 
     if (startDate == null) {
-      startDate = indexDataRepository.findMinBaseDate(indexInfoId)
+      startDate = indexDataRepository.findMinBaseDateByIndexIfoId(indexInfoId)
           .orElseThrow(() -> new IllegalStateException("지수 데이터가 없습니다."));
     }
 

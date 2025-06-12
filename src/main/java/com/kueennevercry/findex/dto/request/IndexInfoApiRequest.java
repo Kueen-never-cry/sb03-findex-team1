@@ -1,4 +1,4 @@
-package com.kueennevercry.findex.infra.openapi;
+package com.kueennevercry.findex.dto.request;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +12,10 @@ public class IndexInfoApiRequest {
   private int pageNo;// 페이지번호
 
   private int numOfRows; // 한 페이지 결과 수
+
+  private String idxNm; // 검색값과 지수명이 일치하는 데이터를 검색
+
+  private String basDt; // 검색값과 기준일자가 일치하는 데이터를 검색 ex)20250610
 
   private String beginBasDt; // 기준일자가 검색값보다 크거나 같은 데이터를 검색
 
