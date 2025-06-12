@@ -2,10 +2,13 @@ package com.kueennevercry.findex.mapper;
 
 import com.kueennevercry.findex.dto.response.CursorPageResponse;
 import com.kueennevercry.findex.dto.response.IndexDataDto;
+import com.kueennevercry.findex.dto.response.IndexInfoApiResponse;
 import com.kueennevercry.findex.entity.IndexData;
+import com.kueennevercry.findex.entity.IndexInfo;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +17,21 @@ public interface IndexDataMapper {
 
   @Mapping(source = "indexInfo.id", target = "indexInfoId")
   IndexDataDto toDto(IndexData indexData);
+
+  void updateEntity(IndexInfoApiResponse response, @MappingTarget IndexData target);
+
+  @Mapping(source = "response.baseDate", target = "baseDate")
+  @Mapping(source = "response.marketPrice", target = "marketPrice")
+  @Mapping(source = "response.closingPrice", target = "closingPrice")
+  @Mapping(source = "response.highPrice", target = "highPrice")
+  @Mapping(source = "response.lowPrice", target = "lowPrice")
+  @Mapping(source = "response.versus", target = "versus")
+  @Mapping(source = "response.fluctuationRate", target = "fluctuationRate")
+  @Mapping(source = "response.tradingQuantity", target = "tradingQuantity")
+  @Mapping(source = "response.tradingPrice", target = "tradingPrice")
+  @Mapping(source = "response.marketTotalAmount", target = "marketTotalAmount")
+  @Mapping(source = "indexInfo", target = "indexInfo")
+  IndexData toEntity(IndexInfoApiResponse response, IndexInfo indexInfo);
 
   default CursorPageResponse<IndexDataDto> toCursorDto(
       List<IndexDataDto> content,
@@ -31,6 +49,4 @@ public interface IndexDataMapper {
         totalElements,
         hasNext);
   }
-
-  ;
 }
