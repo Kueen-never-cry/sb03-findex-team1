@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -20,6 +21,7 @@ public class IndexAutoSyncScheduler {
   private final IndexSyncService indexSyncService;
   private final IndexDataRepository indexDataRepository;
 
+  @Transactional
   @Scheduled(cron = "${batch.index-sync.cron:0 0 0 * * *}")
   public void syncAllEnabledIndices() {
     log.info("[배치 시작] 자동 연동 설정된 지수 목록 연동");

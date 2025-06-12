@@ -37,10 +37,10 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
             index.id,
             index.indexName,
             index.indexClassification,
-            config.enabled.coalesce(false)
+            config.enabled
         ))
-        .from(index)
-        .leftJoin(config).on(config.indexInfo.id.eq(index.id))
+        .from(config)
+        .join(config.indexInfo, index)
         .where(
             indexInfoIdEq(indexInfoId, index),
             enabledEq(enabled, config),
@@ -67,8 +67,9 @@ public class AutoSyncConfigCustomRepositoryImpl implements AutoSyncConfigCustomR
     Long nextIdAfter = results.isEmpty() ? null : results.get(results.size() - 1).indexInfoId();
 
     Long countResult = queryFactory
-        .select(index.count())
-        .from(index)
+        .select(config.count())
+        .from(config)
+        .join(config.indexInfo, index)
         .where(indexInfoIdEq(indexInfoId, index))
         .fetchOne();
 
