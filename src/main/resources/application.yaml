@@ -1,11 +1,11 @@
 spring:
   application:
     name: findex
-  datasource:
-    url: jdbc:postgresql://localhost:5432/findex
-    username: postgres
-    password: 1234
-    driver-class-name: org.postgresql.Driver
+  #  datasource:
+  #    url: jdbc:postgresql://localhost:5432/findex
+  #    username: postgres
+  #    password: 1234
+  #    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,7 +13,31 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
 
-# DB config
+  # DB config
   config:
     import: "classpath:db.yaml"
+
+batch:
+  index-sync:
+    cron: "0 0 0 * * *"
+
+springdoc:
+  api-docs:
+    # OpenAPI 명세서 경로(JSON) -> 기억해두자!!! 미션 때 써먹어야됨.
+    #    path: /hi/my/name/is
+    path: /v3/api-docs
+    title:
+  swagger-ui:
+    # Swagger-ui 경로(HTML)
+    path: /my-swagger-ui.html
+    # API 정렬 기준 - HTTP 메서드의 알파벳순
+    operations-sorter: method
+
+# Open API
+openapi:
+  api-encoded-key: ${OPEN_API_ENCODED_KEY}
+  scheme: "https"
+  host: "apis.data.go.kr"
+  path: "/1160100/service/GetMarketIndexInfoService/getStockMarketIndex"

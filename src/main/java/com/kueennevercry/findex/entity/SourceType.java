@@ -1,5 +1,6 @@
 package com.kueennevercry.findex.entity;
 
-public class Entity {
-
+public enum SourceType {
+  OPEN_API,
+  USER
 }
